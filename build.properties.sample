@@ -1,0 +1,14 @@
+# OkCupid PAT Ant property file sample.
+#
+# This file defines properties specific to your build environment, such as
+# filesystem paths that may differ from one developer to another. Use this
+# to set values appropriate for your system.
+#
+# To use this file, change its name or copy it to "build.properties":
+#
+#     cp build.properties.sample build.properties
+#
+
+# Set appenginesdkdir to the filesystem path to your installation of the
+# Google App Engine Java SDK relative from the build.xml file in your project.
+appenginesdkdir=../appengine-java-sdk
