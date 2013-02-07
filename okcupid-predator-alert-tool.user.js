@@ -34,12 +34,12 @@ OKCPAT.log = function (msg) {
 
 // Initializations.
 // Don't run in frames.
-if (window.top != window.self) {
-    OKCPAT.log('In frame: ' + location.href + ' (Aborting.)');
+if (window.top !== window.self) {
+    OKCPAT.log('In frame on page ' + window.location.href + ' (Aborting.)');
     return;
 }
 
-var uw = (unsafeWindow) ? unsafeWindow : window ; // Help with Chrome compatibility?
+var uw = unsafeWindow || window; // Help with Chrome compatibility?
 GM_addStyle('\
 ');
 OKCPAT.init = function () {
@@ -71,8 +71,15 @@ OKCPAT.getMyUserId = function () {
 OKCPAT.getMyScreenname = function () {
     return uw.SCREENNAME;
 };
-OKCPAT.getTargetUserId = function () {
-    return uw.user_info.userid;
+OKCPAT.getTargetUserId = function (html) {
+    if (!html) {
+        OKCPAT.log('No HTML source code string passed, using active script values.');
+        return uw.user_info.userid;
+    } else {
+        OKCPAT.log('An HTML source code string was passed, parsing string values.');
+        var m = html.match(/"userid"\s*:\s*"(\d+)"/);
+        return (m) ? m[1] : false ;
+    }
 };
 OKCPAT.getTargetScreenname = function () {
     return uw.user_info.screenname;
@@ -82,26 +89,43 @@ OKCPAT.isTargetMe = function () {
 };
 
 // Fetch a page of Match Questions for a particular screenname
-OKCPAT.getQuestionsPage = function (screenname, page_num) {
+OKCPAT.getMatchQuestionsPage = function (screenname, page_num) {
+    var page_num = page_num || 1; // Start at 1 if no page_num was passed.
     var url = window.location.protocol + '//' + window.location.host + '/profile/'
-        + screenname + '/questions';
+        + screenname + '/questions?low=' + page_num.toString();
     GM_xmlhttpRequest({
         'method': 'GET',
         'url': url,
         'onload': function (response) {
-            // TODO: Process success, and then recurse?
             // Find only the answered questions, since those are what we can scrape.
+            var result_count = 0;
+
             var parser = new DOMParser();
             var doc = parser.parseFromString(response.responseText, 'text/html');
+            var targetid = OKCPAT.getTargetUserId(response.responseText);
             var answered_questions = doc.querySelectorAll('.question:not(.not_answered)');
-            var processed_answers = OKCPAT.processAnsweredQuestions(answered_questions);
-            // TODO: What are we gonna do with these processed answers?
-            // TODO: recurse for next page?
+            var processed_answers = OKCPAT.processAnsweredQuestions(answered_questions, targetid);
+
+            // Note how many answers we've been able to scrape.
+            result_count += processed_answers.length;
+
+            // TODO: Send these processed answers to the server!
+
+            var my_page = (url.match(/low=(\d+)/)) ? parseInt(url.match(/low=(\d+)/)[1]) : 1 ;
+            if (result_count) {
+                // We're still seeing answers, so grab the next page, too.
+                var next_page = my_page + 10; // OkCupid increments by 10 questions per page.
+                OKCPAT.log('Got ' + result_count.toString() + ' answers, next page starts at ' + next_page.toString());
+                OKCPAT.getMatchQuestionsPage(screenname, next_page);
+            } else {
+                OKCPAT.log('No Match Questions found on page ' + my_page.toString() + ', stopping.');
+            }
+            return;
         }
     });
 };
 
-OKCPAT.processAnsweredQuestions = function (els) {
+OKCPAT.processAnsweredQuestions = function (els, targetid) {
     var arr_qs = [];
     // for each answered question on this page,
     for (var i = 0; i < els.length; i++) {
@@ -109,7 +133,7 @@ OKCPAT.processAnsweredQuestions = function (els) {
         var qanswered = els[i].querySelector('#answer_target_' + qid).childNodes[0].textContent;
         // TODO: Ask the server if we've already got a match for question X with answer Y.
         // If we don't, send this information to the server for storage.
-        arr_qs.push({'qid' : qid, 'qanswered' : qanswered});
+        arr_qs.push({'userid' : targetid, 'qid' : qid, 'qanswered' : qanswered});
     }
     return arr_qs;
 };
@@ -122,7 +146,7 @@ OKCPAT.main = function () {
     var myid = OKCPAT.getMyUserId();
     var mysn = OKCPAT.getMyScreenname();
     // Begin paging through the active profile's Match Questions
-    OKCPAT.getQuestionsPage(targetsn);
+    OKCPAT.getMatchQuestionsPage(targetsn);
         // If that person has answered one of a set of Match Questions from Lisak and Miller,
         // TODO: How are we going to figure out which are the appropriate set of questions?
         // Report their answers to the centralized server
