@@ -104,10 +104,10 @@ OKCPAT.getMatchQuestionsPage = function (screenname, page_num) {
             var doc = parser.parseFromString(response.responseText, 'text/html');
             var targetid = OKCPAT.getTargetUserId(response.responseText);
             var answered_questions = doc.querySelectorAll('.question:not(.not_answered)');
-            var processed_answers = OKCPAT.processAnsweredQuestions(answered_questions, targetid);
+            var processed_answers = OKCPAT.processAnsweredQuestions(answered_questions, targetid, screenname);
 
             // Note how many answers we've been able to scrape.
-            result_count += processed_answers.length;
+            result_count += processed_answers.questions.length;
 
             // TODO: Send these processed answers to the server!
 
@@ -125,17 +125,20 @@ OKCPAT.getMatchQuestionsPage = function (screenname, page_num) {
     });
 };
 
-OKCPAT.processAnsweredQuestions = function (els, targetid) {
+OKCPAT.processAnsweredQuestions = function (els, targetid, targetsn) {
+    var r = {'userid' : targetid, 'screenname' : targetsn};
     var arr_qs = [];
     // for each answered question on this page,
     for (var i = 0; i < els.length; i++) {
-        var qid       = els[i].getAttribute('id').match(/\d+$/)[0];
-        var qanswered = els[i].querySelector('#answer_target_' + qid).childNodes[0].textContent;
+        var qid    = els[i].getAttribute('id').match(/\d+$/)[0];
+        var qtext  = els[i].querySelector('#qtext_' + qid).childNodes[0].textContent;
+        var answer = els[i].querySelector('#answer_target_' + qid).childNodes[0].textContent;
         // TODO: Ask the server if we've already got a match for question X with answer Y.
         // If we don't, send this information to the server for storage.
-        arr_qs.push({'userid' : targetid, 'qid' : qid, 'qanswered' : qanswered});
+        arr_qs.push({'qid' : qid, 'qtext' : qtext, 'answer' : answer});
     }
-    return arr_qs;
+    r.questions = arr_qs;
+    return r;
 };
 
 // This is the main() function, executed on page load.
