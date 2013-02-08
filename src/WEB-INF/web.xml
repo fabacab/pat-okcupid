@@ -20,6 +20,16 @@
       <welcome-file>index.html</welcome-file>
   </welcome-file-list>
 
+  <!-- Use Objectify (objectify-appengine). See https://code.google.com/p/objectify-appengine/wiki/Setup -->
+  <filter>
+      <filter-name>ObjectifyFilter</filter-name>
+      <filter-class>com.googlecode.objectify.ObjectifyFilter</filter-class>
+  </filter>
+  <filter-mapping>
+      <filter-name>ObjectifyFilter</filter-name>
+      <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
   <!--
      Uncomment this section to enable Appstats for your application as described in
      http://code.google.com/appengine/docs/java/tools/appstats.html

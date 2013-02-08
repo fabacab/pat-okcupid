@@ -69,11 +69,17 @@
         <fileset dir="${appengine.sdk}/lib/shared">
           <include name="*.jar"/>
         </fileset>
+        <fileset dir="src/WEB-INF/lib">
+          <include name="**/*.jar" />
+        </fileset>
       </classpath>
     </javac>
     <copy todir="${war.dir}/WEB-INF/lib"
           flatten="true">
       <fileset dir="${appengine.sdk}/lib/user">
+        <include name="**/*.jar" />
+      </fileset>
+      <fileset dir="src/WEB-INF/lib">
         <include name="**/*.jar" />
       </fileset>
     </copy>
