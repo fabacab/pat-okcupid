@@ -5,6 +5,7 @@ import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Embed;
 import java.util.Set;
+import java.lang.reflect.Field;
 
 /**
  * An OkCupid User will have any number of OkCupid Questions they answered
@@ -42,6 +43,31 @@ public class OkCupidUser {
     public void setScreenname (String sn) {
         this.screenname = sn;
     }
+
+    // Intended for debug or info logging only.
+    // See: http://www.javapractices.com/topic/TopicAction.do?Id=55
+    public String toString () {
+        StringBuilder str = new StringBuilder();
+        String NEW_LINE = System.getProperty("line.separator");
+
+        str.append(this.getClass().getName() + " object {" + NEW_LINE);
+        Field[] fields = this.getClass().getDeclaredFields();
+        for (Field field : fields) {
+            str.append("  ");
+            try {
+                str.append(field.getName());
+                str.append(": " + field.getType().getSimpleName() + " ");
+                str.append(field.get(this));
+            }
+            catch (IllegalAccessException ex) {
+                System.out.println(ex);
+            }
+            str.append(NEW_LINE);
+        }
+        str.append("}");
+
+        return str.toString();
+    }
 }
 
 /**
@@ -52,7 +78,7 @@ public class OkCupidUser {
  */
 @Embed
 class OkCupidAnswer {
-    private String qid;      // The OkCupid Question ID this answer has answered.
-    private String question; // The text of the question from OkCupid.
-    private String answer;   // The text of the answer.
+    private String qid;    // The OkCupid Question ID this answer has answered.
+    private String qtext;  // The text of the question from OkCupid.
+    private String answer; // The text of the answer.
 }

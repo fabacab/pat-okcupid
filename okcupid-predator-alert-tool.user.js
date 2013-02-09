@@ -22,8 +22,8 @@
 OKCPAT = {};
 OKCPAT.CONFIG = {
     'debug': false, // switch to true to debug.
-    // TODO: Uh, make this. ;)
-    'storage_server_url': '' // Our centralized database.
+    'storage_server_url': '', // Our centralized database.
+    'storage_server_url_development': 'http://localhost:8080/okcupid_pat', // A dev server, for when 'debug' is true.
 };
 
 // Utility debugging function.
@@ -47,6 +47,11 @@ OKCPAT.init = function () {
 };
 window.addEventListener('DOMContentLoaded', OKCPAT.init);
 
+OKCPAT.getServerUrl = function () {
+    return (OKCPAT.CONFIG.debug) ?
+        OKCPAT.CONFIG.storage_server_url_development :
+        OKCPAT.CONFIG.storage_server_url;
+};
 OKCPAT.setValue = function (x, y) {
     return (OKCPAT.CONFIG.debug) ?
         GM_setValue(x += '_development', y) :
@@ -104,16 +109,16 @@ OKCPAT.getMatchQuestionsPage = function (screenname, page_num) {
             var doc = parser.parseFromString(response.responseText, 'text/html');
             var targetid = OKCPAT.getTargetUserId(response.responseText);
             var answered_questions = doc.querySelectorAll('.question:not(.not_answered)');
-            var processed_answers = OKCPAT.processAnsweredQuestions(answered_questions, targetid, screenname);
+            var data = OKCPAT.processAnsweredQuestions(answered_questions, targetid, screenname);
 
             // Note how many answers we've been able to scrape.
-            result_count += processed_answers.questions.length;
-
-            // TODO: Send these processed answers to the server!
+            result_count += data.answers.length;
 
             var my_page = (url.match(/low=(\d+)/)) ? parseInt(url.match(/low=(\d+)/)[1]) : 1 ;
             if (result_count) {
-                // We're still seeing answers, so grab the next page, too.
+                OKCPAT.saveToServer(data);
+
+                // We got answers from the processed page, so grab the next page, too.
                 var next_page = my_page + 10; // OkCupid increments by 10 questions per page.
                 OKCPAT.log('Got ' + result_count.toString() + ' answers, next page starts at ' + next_page.toString());
                 OKCPAT.getMatchQuestionsPage(screenname, next_page);
@@ -137,8 +142,23 @@ OKCPAT.processAnsweredQuestions = function (els, targetid, targetsn) {
         // If we don't, send this information to the server for storage.
         arr_qs.push({'qid' : qid, 'qtext' : qtext, 'answer' : answer});
     }
-    r.questions = arr_qs;
+    r.answers = arr_qs;
     return r;
+};
+
+OKCPAT.saveToServer = function (data) {
+    GM_xmlhttpRequest({
+        'method': 'POST',
+        'url': OKCPAT.getServerUrl(),
+        'headers': {
+            'Content-Type': 'application/json'
+        },
+        'data': JSON.stringify(data),
+        'onload': function (response) {
+            // TODO!
+            OKCPAT.log(response.responseText);
+        }
+    });
 };
 
 // This is the main() function, executed on page load.
