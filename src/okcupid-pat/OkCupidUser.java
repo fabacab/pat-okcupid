@@ -1,11 +1,13 @@
 package okcupid_pat;
 
+import java.lang.reflect.Field;
+import java.util.Set;
+import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Embed;
-import java.util.Set;
-import java.lang.reflect.Field;
+import static okcupid_pat.OfyService.ofy;
 
 /**
  * An OkCupid User will have any number of OkCupid Questions they answered
@@ -23,17 +25,18 @@ public class OkCupidUser {
     //      https://code.google.com/p/objectify-appengine/wiki/Entities#The_Basics
     private OkCupidUser () {}
 
-    public OkCupidUser (String uid, String sn) {
-        this.userid = uid;
-        this.screenname = sn;
-    }
-
     // Getters.
     public String getUserId () {
         return this.userid;
     }
     public String getScreenname () {
         return this.screenname;
+    }
+    public Set<OkCupidAnswer> getAnswers () {
+        return this.answers;
+    }
+    public Key<OkCupidUser> getKey () {
+        return Key.create(OkCupidUser.class, this.userid);
     }
 
     // And setters.
@@ -42,6 +45,18 @@ public class OkCupidUser {
     }
     public void setScreenname (String sn) {
         this.screenname = sn;
+    }
+
+    // Adds an OkCupid Match Question to the set of Set<OkCupidAnswer>'s here.
+    public void addOkCupidAnswer (OkCupidAnswer ans) {
+        // Have we already answered a question with this ID?
+        for (OkCupidAnswer x : this.answers) {
+            if (ans.getQuestionId().equals(x.getQuestionId())) {
+                return; // Yup, so do nothing.
+            }
+        }
+        // We didn't find a stored answer with this Question ID, so add it.
+        this.answers.add(ans);
     }
 
     // Intended for debug or info logging only.
@@ -68,17 +83,4 @@ public class OkCupidUser {
 
         return str.toString();
     }
-}
-
-/**
- * Every OkCupidUser will have answered any number of questions. These answers
- * are modeled as an OkCupidAnswer, which is embedded in the OkCupidUser object.
- * See:
- *      https://code.google.com/p/objectify-appengine/wiki/Entities#Embedding
- */
-@Embed
-class OkCupidAnswer {
-    private String qid;    // The OkCupid Question ID this answer has answered.
-    private String qtext;  // The text of the question from OkCupid.
-    private String answer; // The text of the answer.
 }

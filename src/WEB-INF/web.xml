@@ -13,7 +13,7 @@
 
   <servlet-mapping>
     <servlet-name>okcupid_pat</servlet-name>
-    <url-pattern>/okcupid_pat</url-pattern>
+    <url-pattern>/okcupid_pat/*</url-pattern>
   </servlet-mapping>
 
   <welcome-file-list>
