@@ -96,14 +96,16 @@ public class OkCupidPatServlet extends HttpServlet {
 }
 
 // RESTful JSON response class, for passing to Gson.
+// This tries to comform to the XMLHttpRequest standard.
+// See: https://developer.mozilla.org/en-US/docs/DOM/XMLHttpRequest#Properties
 class JsonHttpResponse {
-    private int status_code;
-    private String status;
+    private int status;
+    private String statusText;
     private String url;
 
-    public JsonHttpResponse (String status, String url) {
-        this.status = status;
-        this.status_code = Integer.parseInt(status.split(" ")[0]);
+    public JsonHttpResponse (String statusText, String url) {
+        this.status = Integer.parseInt(statusText.split(" ")[0]);
+        this.statusText = statusText;
         this.url = url;
     }
 }
