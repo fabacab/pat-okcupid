@@ -118,7 +118,7 @@ OKCPAT.scrapeMatchQuestionsPage = function (screenname, page_num) {
             var parser = new DOMParser();
             var doc = parser.parseFromString(response.responseText, 'text/html');
             var targetid = OKCPAT.getTargetUserId(response.responseText);
-            var answered_questions = doc.querySelectorAll('.question:not(.not_answered)');
+            var answered_questions = doc.querySelectorAll('.question.public:not(.not_answered)');
             var data = OKCPAT.processAnsweredQuestions(answered_questions, targetid, screenname);
 
             // Note how many answers we've been able to scrape.
