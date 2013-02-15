@@ -10,7 +10,7 @@
 // @namespace      com.maybemaimed.okcupid.pat
 // @updateURL      https://userscripts.org/scripts/source/TK.user.js
 // @description    Alerts you of potential sexual predators on OkCupid based on their own answers to Match Questions patterned after Lisak and Miller's groundbreaking academic work on identifying "undetected rapists."
-// @include        http://www.okcupid.com/profile/*
+// @include        http://www.okcupid.com/*
 // @grant          GM_log
 // @grant          GM_xmlhttpRequest
 // @grant          GM_addStyle
@@ -19,7 +19,7 @@
 // @grant          GM_deleteValue
 // ==/UserScript==
 
-OKCPAT = {};
+var OKCPAT = {};
 OKCPAT.CONFIG = {
     'debug': false, // switch to true to debug.
     'storage_server_url': '', // Our centralized database.
@@ -38,7 +38,6 @@ if (window.top !== window.self) {
     OKCPAT.log('In frame on page ' + window.location.href + ' (Aborting.)');
     return;
 }
-
 var uw = unsafeWindow || window; // Help with Chrome compatibility?
 GM_addStyle('\
 ');
@@ -47,10 +46,11 @@ OKCPAT.init = function () {
 };
 window.addEventListener('DOMContentLoaded', OKCPAT.init);
 
-OKCPAT.getServerUrl = function () {
+OKCPAT.getServerUrl = function (path) {
+    path = path || '';
     return (OKCPAT.CONFIG.debug) ?
-        OKCPAT.CONFIG.storage_server_url_development :
-        OKCPAT.CONFIG.storage_server_url;
+        OKCPAT.CONFIG.storage_server_url_development + path:
+        OKCPAT.CONFIG.storage_server_url + path;
 };
 OKCPAT.setValue = function (x, y) {
     return (OKCPAT.CONFIG.debug) ?
@@ -67,6 +67,15 @@ OKCPAT.getValue = function (x, y) {
             GM_getValue(x += '_development', y):
             GM_getValue(x, y);
     }
+};
+
+// This expects JSON-formatted data.
+// TODO: Add some error-handling to these functions?
+OKCPAT.saveLocally = function (key, data) {
+    return OKCPAT.setValue(key, JSON.stringify(data));
+};
+OKCPAT.readLocally = function (key) {
+    return JSON.parse(OKCPAT.getValue(key));
 };
 
 // NOTE: "target" = other user, "my" = logged-in user
@@ -93,8 +102,9 @@ OKCPAT.isTargetMe = function () {
     return (this.getMyUserId() === this.getTargetUserId()) ? true : false;
 };
 
-// Fetch a page of Match Questions for a particular screenname
-OKCPAT.getMatchQuestionsPage = function (screenname, page_num) {
+// Scrape a page of Match Questions for a particular screenname, then recurse.
+// Note this sends JSON data to the server in batches of up to 10 questions.
+OKCPAT.scrapeMatchQuestionsPage = function (screenname, page_num) {
     var page_num = page_num || 1; // Start at 1 if no page_num was passed.
     var url = window.location.protocol + '//' + window.location.host + '/profile/'
         + screenname + '/questions?low=' + page_num.toString();
@@ -117,13 +127,22 @@ OKCPAT.getMatchQuestionsPage = function (screenname, page_num) {
             var my_page = (url.match(/low=(\d+)/)) ? parseInt(url.match(/low=(\d+)/)[1]) : 1 ;
             if (result_count) {
                 OKCPAT.saveToServer(data);
+                // TODO: Also save locally, with timestamp noting last scrape time.
+                data.last_scraped = new Date().getTime();
+//                var data = (OKCPAT.readLocally(targetid)) ?
+//                    OKCPAT.readLocally(targetid).concat(data) :
+//                    data;
+//                OKCPAT.saveLocally(targetid, data);
 
                 // We got answers from the processed page, so grab the next page, too.
                 var next_page = my_page + 10; // OkCupid increments by 10 questions per page.
                 OKCPAT.log('Got ' + result_count.toString() + ' answers, next page starts at ' + next_page.toString());
-                OKCPAT.getMatchQuestionsPage(screenname, next_page);
+                OKCPAT.scrapeMatchQuestionsPage(screenname, next_page);
             } else {
                 OKCPAT.log('No Match Questions found on page ' + my_page.toString() + ', stopping.');
+                // Now that we've scraped what we can, let's ask the server to
+                // check if it knows of more answers we couldn't find, and save those.
+                OKCPAT.getQuestionsAnsweredByUserId(targetid);
             }
             return;
         }
@@ -155,26 +174,64 @@ OKCPAT.saveToServer = function (data) {
         },
         'data': JSON.stringify(data),
         'onload': function (response) {
-            // TODO!
-            OKCPAT.log(response.responseText);
+            // TODO: Offer some kind of UI to indicate we've done this?
+            OKCPAT.log('OKCPAT.saveToServer(): Received response ' + response.responseText);
+        }
+    });
+};
+
+
+OKCPAT.getQuestionsAnsweredByUserId = function (userid) {
+    GM_xmlhttpRequest({
+        'method': 'GET',
+        'url': OKCPAT.getServerUrl('/' + userid),
+        'onload': function (response) {
+            var json = JSON.parse(response.responseText);
+            if (json) {
+                // add a timestamp of when we last fetched this user's info.
+                json.last_fetched = new Date().getTime();
+                OKCPAT.saveLocally(userid, json);
+            }
+            // TODO: then we need to start looking for questions that match any of
+            // the appropriate pre-defined lists.
+            // TODO: Create a local variable store for the right Question IDs.
         }
     });
 };
 
 // This is the main() function, executed on page load.
 OKCPAT.main = function () {
-    // Determine what profile we're looking at.
-    var targetid = OKCPAT.getTargetUserId();
-    var targetsn = OKCPAT.getTargetScreenname();
     var myid = OKCPAT.getMyUserId();
     var mysn = OKCPAT.getMyScreenname();
-    // Begin paging through the active profile's Match Questions
-    OKCPAT.getMatchQuestionsPage(targetsn);
+    // If we're on a different user's profile page,
+    if (window.location.pathname.match(/^profile\//)) { // An intermediate slash means a target user is present.
+        // Grab the target IDs here.
+        var targetid = OKCPAT.getTargetUserId();
+        var targetsn = OKCPAT.getTargetScreenname();
+        // Read the list of questions answered by this user, if we remember any.
+        var data = OKCPAT.readLocally(targetid);
         // If that person has answered one of a set of Match Questions from Lisak and Miller,
         // TODO: How are we going to figure out which are the appropriate set of questions?
         // Report their answers to the centralized server
         // TODO: Figure out how best to send this information to the back-end
-
+    }
+    // Find all links to OkCupid Users on this page.
+    var user_els = document.querySelectorAll('a[href^="/profile/"]');
+    // Make a list of their screennames,
+    var names = [];
+    for (var i = 0; i < user_els.length; i++) {
+        var m = user_els[i].getAttribute('href').match(/\/profile\/([^?\/]+)/);
+        // but don't duplicate names, and exclude our own screenname.
+        if (m[1] && (-1 === names.indexOf(m[1])) && (m[1] !== mysn)) {
+            names.push(m[1]);
+        }
+    }
+    // Begin scraping the target OkCupid Users found.
+    // TODO: Should we also find and scrape OkCupid Users from returned pages?
+    for (var i = 0; i < names.length; i++) {
+        OKCPAT.log('Beginning scraping Match Questions answered by ' + names[i]);
+        OKCPAT.scrapeMatchQuestionsPage(names[i]);
+    }
 };
 
 // The following is required for Chrome compatibility, as we need "text/html" parsing.
