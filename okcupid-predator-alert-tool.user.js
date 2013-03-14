@@ -22,7 +22,7 @@
 var OKCPAT = {};
 OKCPAT.CONFIG = {
     'debug': false, // switch to true to debug.
-    'storage_server_url': '', // Our centralized database.
+    'storage_server_url': 'http://okcupid-pat.appspot.com/okcupid_pat', // Our centralized database.
     'storage_server_url_development': 'http://localhost:8080/okcupid_pat', // A dev server, for when 'debug' is true.
     // TODO: A configuration option to select active sets?
     //'active_topics': [], // List of topics to match questions against.
