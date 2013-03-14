@@ -24,6 +24,22 @@ OKCPAT.CONFIG = {
     'debug': false, // switch to true to debug.
     'storage_server_url': '', // Our centralized database.
     'storage_server_url_development': 'http://localhost:8080/okcupid_pat', // A dev server, for when 'debug' is true.
+    // TODO: A configuration option to select active sets?
+    //'active_topics': [], // List of topics to match questions against.
+    // Define list of flagged Lisak and Miller Q&A's by OkCupid Question IDs.
+    // TODO: Define more, topical "flagged_qs_*" sets of alert-worthy Q&A's.
+    'flagged_qs_sexual_consent': {
+        // QID : Answer
+    },
+//    // TODO: Support multiple lists of questions?
+//    'flagged_qs_polyamory': {
+//        784 : 'No',
+//        31581 : 'No way.'
+//    },
+    'flagged_qs_development': {
+        784 : 'No',
+        31581 : 'No way.'
+    }
 };
 
 // Utility debugging function.
@@ -40,8 +56,20 @@ if (window.top !== window.self) {
 }
 var uw = unsafeWindow || window; // Help with Chrome compatibility?
 GM_addStyle('\
+.okcpat_red_flagged, #okcpat_warning { border: 3px solid red; }\
+#okcpat_warning { padding: 25px; }\
+#okcpat_warning p { margin: 1em 0; }\
+#okcpat_warning dl { counter-reset: item; }\
+#okcpat_warning dt:before {\
+    counter-increment: item;\
+    content: counter(item)". ";\
+}\
+#okcpat_warning dd { margin: 0 0 1em 3em; }\
 ');
 OKCPAT.init = function () {
+    // TODO: Define a UI for choosing topic lists?
+//    OKCPAT.CONFIG.active_topics.push('sexual_consent');
+//    OKCPAT.CONFIG.active_topics.push('polyamory');
     OKCPAT.main();
 };
 window.addEventListener('DOMContentLoaded', OKCPAT.init);
@@ -68,6 +96,17 @@ OKCPAT.getValue = function (x, y) {
             GM_getValue(x, y);
     }
 };
+OKCPAT.deleteValue = function (x) {
+    return (OKCPAT.CONFIG.debug) ?
+        GM_deleteValue(x += '_development'):
+        GM_deleteValue(x);
+};
+
+OKCPAT.getFlaggedQs = function () {
+    return (OKCPAT.CONFIG.debug) ?
+        OKCPAT.CONFIG['flagged_qs_development']:
+        OKCPAT.CONFIG['flagged_qs_sexual_consent'];
+};
 
 // This expects JSON-formatted data.
 // TODO: Add some error-handling to these functions?
@@ -75,7 +114,12 @@ OKCPAT.saveLocally = function (key, data) {
     return OKCPAT.setValue(key, JSON.stringify(data));
 };
 OKCPAT.readLocally = function (key) {
-    return JSON.parse(OKCPAT.getValue(key));
+    return (OKCPAT.getValue(key)) ?
+        JSON.parse(OKCPAT.getValue(key)):
+        false;
+};
+OKCPAT.deleteLocally = function (key) {
+    return OKCPAT.deleteValue(key);
 };
 
 // NOTE: "target" = other user, "my" = logged-in user
@@ -190,7 +234,7 @@ OKCPAT.getQuestionsAnsweredByUserId = function (userid) {
             if (json) {
                 // add a timestamp of when we last fetched this user's info.
                 json.last_fetched = new Date().getTime();
-                OKCPAT.saveLocally(userid, json);
+                OKCPAT.saveLocally(json.screenname, json);
             }
             // TODO: then we need to start looking for questions that match any of
             // the appropriate pre-defined lists.
@@ -203,20 +247,98 @@ OKCPAT.getQuestionsAnsweredByUserId = function (userid) {
 OKCPAT.main = function () {
     var myid = OKCPAT.getMyUserId();
     var mysn = OKCPAT.getMyScreenname();
-    // If we're on a different user's profile page,
-    if (window.location.pathname.match(/^profile\//)) { // An intermediate slash means a target user is present.
+    var names = OKCPAT.findUsersOnPage();
+    var red_flags = {};
+    // For each of the OkCupid Users found,
+    for (var i = 0; i < names.length; i++) {
+        // begin scraping their Match Questions.
+        OKCPAT.log('Beginning scraping Match Questions answered by ' + names[i]);
+        OKCPAT.scrapeMatchQuestionsPage(names[i]);
+
+        // Read the list of questions answered by this user, if we remember any.
+        var data = OKCPAT.readLocally(names[i]);
+        if (data) {
+            // TODO: How are we going to figure out which are the appropriate set of questions?
+            //       We could:
+            //           * Define a set of built-ins?
+            // Get a list of the flagged question IDs, as strings
+            var k = Object.keys(OKCPAT.getFlaggedQs());
+            // and a list of the answered question IDs, also as strings.
+            var a = [];
+            for (var y in data.answers) {
+                a.push(String(data.answers[y].qid));
+            }
+            // Search the answered questions for one of the flagged ones.
+            for (var y = 0; y < k.length; y++) {
+                // If that person has answered one of a set of flagged questions,
+                var x = a.indexOf(k[y]);
+                if (-1 !== x) {
+                    // check their answer and, if it's concering,
+                    if (data.answers[x].answer.trim() === OKCPAT.getFlaggedQs()[k[y]].trim()) {
+                        OKCPAT.log('Found concering answer in Question ID ' + data.answers[x].qid + ' by user ' + names[i]);
+                        // add the answer to their set of red flags.
+                        if (names[i] in red_flags) {
+                            red_flags[names[i]].push({
+                                'qid' : data.answers[x].qid,
+                                'qtext' : data.answers[x].qtext,
+                                'answer' : data.answers[x].answer
+                            });
+                        } else {
+                            red_flags[names[i]] = [{
+                                'qid' : data.answers[x].qid,
+                                'qtext' : data.answers[x].qtext,
+                                'answer' : data.answers[x].answer
+                            }];
+                        }
+                        OKCPAT.flagUser(names[i]);
+                    }
+                }
+            }
+        }
+    }
+    // If we're on a flagged user's profile page,
+    var m = window.location.pathname.match(/^\/profile\/([^?\/]+)/);
+    if (m && (m[1] in red_flags)) {
         // Grab the target IDs here.
         var targetid = OKCPAT.getTargetUserId();
         var targetsn = OKCPAT.getTargetScreenname();
-        // Read the list of questions answered by this user, if we remember any.
-        var data = OKCPAT.readLocally(targetid);
-        // If that person has answered one of a set of Match Questions from Lisak and Miller,
-        // TODO: How are we going to figure out which are the appropriate set of questions?
-        // Report their answers to the centralized server
-        // TODO: Figure out how best to send this information to the back-end
+        OKCPAT.log('Loading profile page for ' + targetsn + ' (userid: ' + targetid + ').');
+        // Show the details of the flagged Questions answered by this user.
+        var div = document.createElement('div');
+        div.setAttribute('id', 'okcpat_warning');
+        div.setAttribute('class', 'content');
+        var a_hdr = document.createElement('a');
+        a_hdr.setAttribute('class', 'essay_title');
+        a_hdr.innerHTML = 'OkCupid Predator Alert Warning!';
+        div.appendChild(a_hdr);
+        var txt_el = document.createElement('div');
+        txt_el.setAttribute('class', 'text');
+        var p = document.createElement('p');
+        // TODO: Variablize this so it reads "NAME answered NUMBER questions about TOPIC in a concerning way..."
+        p.innerHTML = targetsn + ' answered the following questions in a concering way:';
+        txt_el.appendChild(p);
+        div.appendChild(txt_el);
+        var dl = document.createElement('dl');
+        // For each of the flagged questions,
+        for (var z = 0; z < red_flags[targetsn].length; z++) {
+            // create a <dd> element and an associated <dt> element
+            var dt = document.createElement('dt');
+            dt.innerHTML = red_flags[targetsn][z].qtext;
+            dl.appendChild(dt);
+            var dd = document.createElement('dd');
+            dd.innerHTML = red_flags[targetsn][z].answer;
+            dl.appendChild(dd);
+        }
+        div.appendChild(dl);
+        // Display this information at the top of the user's profile.
+        var before = document.getElementById('essay_0');
+        before.parentNode.insertBefore(div, before);
     }
-    // Find all links to OkCupid Users on this page.
+};
+
+OKCPAT.findUsersOnPage = function () {
     var user_els = document.querySelectorAll('a[href^="/profile/"]');
+    var mysn = OKCPAT.getMyScreenname();
     // Make a list of their screennames,
     var names = [];
     for (var i = 0; i < user_els.length; i++) {
@@ -226,11 +348,15 @@ OKCPAT.main = function () {
             names.push(m[1]);
         }
     }
-    // Begin scraping the target OkCupid Users found.
-    // TODO: Should we also find and scrape OkCupid Users from returned pages?
-    for (var i = 0; i < names.length; i++) {
-        OKCPAT.log('Beginning scraping Match Questions answered by ' + names[i]);
-        OKCPAT.scrapeMatchQuestionsPage(names[i]);
+    return names;
+};
+
+OKCPAT.flagUser = function (name) {
+    // Find links to this user's profile,
+    var link_els = document.querySelectorAll('a[href^="/profile/' + name + '"]');
+    for (var i = 0; i < link_els.length; i++) {
+        // and highlight them with a CSS class.
+        link_els[i].setAttribute('class', link_els[i].className + ' okcpat_red_flagged');
     }
 };
 
