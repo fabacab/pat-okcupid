@@ -24,6 +24,8 @@ OKCPAT.CONFIG = {
     'debug': false, // switch to true to debug.
     'storage_server_url': 'http://okcupid-pat.appspot.com/okcupid_pat', // Our centralized database.
     'storage_server_url_development': 'http://localhost:8080/okcupid_pat', // A dev server, for when 'debug' is true.
+    'red_flag_suggestion_form_url': 'https://docs.google.com/forms/d/15zyiFLP71Qtl6eVtACjg2SIaV9ZKAv3DpcK0d_9_Qnc/viewform',
+    'red_flag_suggestion_form_url_development': 'https://docs.google.com/forms/d/1vddPhUKBq08yhaWgCQvtMCWoUA6YFIFV9rH9OAz9PsM/viewform',
     // TODO: A configuration option to select active sets?
     //'active_topics': [], // List of topics to match questions against.
     // Define list of flagged Lisak and Miller Q&A's by OkCupid Question IDs.
@@ -79,6 +81,11 @@ OKCPAT.getServerUrl = function (path) {
     return (OKCPAT.CONFIG.debug) ?
         OKCPAT.CONFIG.storage_server_url_development + path:
         OKCPAT.CONFIG.storage_server_url + path;
+};
+OKCPAT.getSuggestionFormUrl = function () {
+    return (OKCPAT.CONFIG.debug) ?
+        OKCPAT.CONFIG.red_flag_suggestion_form_url_development:
+        OKCPAT.CONFIG.red_flag_suggestion_form_url;
 };
 OKCPAT.setValue = function (x, y) {
     return (OKCPAT.CONFIG.debug) ?
@@ -333,6 +340,45 @@ OKCPAT.main = function () {
         // Display this information at the top of the user's profile.
         var before = document.getElementById('essay_0');
         before.parentNode.insertBefore(div, before);
+    }
+    // If there are any questions the human user can see, offer a
+    // link to suggest adding this question to the list of red flags.
+    var q = document.querySelectorAll('.question');
+    if (q.length) {
+        for (var i = 0; i < q.length; i++) {
+            // Construct the pre-filled Google Form URL.
+            var href = OKCPAT.getSuggestionFormUrl() + '?';
+            href += 'entry.1272351999=' + encodeURIComponent(q[i].getAttribute('id').split('_')[1]);
+            href += '&entry.734244=' + encodeURIComponent(q[i].querySelector('.qtext').textContent);
+            var possible_answers = '';
+            var concerning_answers = '';
+            var els = q[i].querySelectorAll('.self_answers li');
+            for (var x = 0; x < els.length; x++) {
+                possible_answers += els[x].textContent;
+                // Add a newline unless this is the last possible answer.
+                if (x !== (els.length - 1)) {
+                    possible_answers += "\n";
+                }
+            }
+            els = q[i].querySelectorAll('.self_answers li:not(.match)');
+            for (x = 0; x < els.length; x++) {
+                concerning_answers += els[x].textContent;
+                if (x !== (els.length - 1)) {
+                    concerning_answers += "\n";
+                }
+            }
+            href += '&entry.1550986692=' + encodeURIComponent(possible_answers);
+            href += '&entry.2047128191=' + encodeURIComponent(concerning_answers);
+            var p = document.createElement('p');
+            p.setAttribute('class', 'btn small');
+            p.setAttribute('style', 'width: auto; max-width: 25em'); // Inline to override "!important" in CSS.
+            var a = document.createElement('a');
+            a.setAttribute('href', href);
+            a.setAttribute('target', '_blank');
+            a.innerHTML = 'Suggest as "red flag" to OKCPAT';
+            p.appendChild(a);
+            q[i].appendChild(p);
+        }
     }
 };
 
