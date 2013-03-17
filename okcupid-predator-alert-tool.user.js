@@ -42,6 +42,17 @@ OKCPAT.CONFIG = {
         421577 : 'Yes',
         423366 : 'Yes',
         423369 : 'Yes',
+        // These are additional concerning questions regarding sexual consent.
+        21527 : 'Yes', // Do you feel there are any circumstances in which a person is obligated to have sex with you?
+        19162 : [ // No means NO!
+            "Mostly, occasionally it's really a Yes in disguise",
+            "A No is just a Yes that needs a little convincing!",
+            "Never, they all want me. They just don't know it."
+        ],
+        8218 : [ // Would you ever film a sexual encounter without your partner knowing?
+            "Yes",
+            "I'm Not Sure"
+        ],
         // These are additional concerning questions which could eventually be
         // moved to their own sets once that feature is implemented.
         55349 : 'Yes.', // Have you ever thrown an object in anger during an argument?
@@ -49,13 +60,15 @@ OKCPAT.CONFIG = {
         36624 : [ // Are you ever violent with your friends?
             'Yes, I use physical force whenever I want.',
             'Yes, but only playfully or in jest.'
-        ]
+        ],
+        48947 : 'Yes.' // Is intoxication ever an acceptable excuse for acting stupid?
     },
 //    // TODO: Support multiple lists of questions?
 //    'flagged_qs_violence': {
 //        55349 : 'Yes.',
 //        // TODO: Support checking against MULTIPLE concerning answers.
-//        36624 : ['Yes, I use physical force whenever I want.', 'Yes, but only playfully or in jest.']
+//        36624 : ['Yes, I use physical force whenever I want.', 'Yes, but only playfully or in jest.'],
+//        61281 : ['Always.', 'Frequently.']
 //    },
 //    'flagged_qs_polyamory': {
 //        784 : 'No',
@@ -63,7 +76,9 @@ OKCPAT.CONFIG = {
 //    },
     'flagged_qs_development': {
         784 : 'No',
-        31581 : 'No way.'
+        31581 : 'No way.',
+        36624 : ['Yes, I use physical force whenever I want.', 'Yes, but only playfully or in jest.'],
+        61281 : ['Always.', 'Frequently.']
     }
 };
 
@@ -247,8 +262,8 @@ OKCPAT.processAnsweredQuestions = function (els, targetid, targetsn) {
     // for each answered question on this page,
     for (var i = 0; i < els.length; i++) {
         var qid    = els[i].getAttribute('id').match(/\d+$/)[0];
-        var qtext  = els[i].querySelector('#qtext_' + qid).childNodes[0].textContent;
-        var answer = els[i].querySelector('#answer_target_' + qid).childNodes[0].textContent;
+        var qtext  = els[i].querySelector('#qtext_' + qid).childNodes[0].textContent.trim();
+        var answer = els[i].querySelector('#answer_target_' + qid).childNodes[0].textContent.trim();
         // TODO: Ask the server if we've already got a match for question X with answer Y.
         // If we don't, send this information to the server for storage.
         arr_qs.push({'qid' : qid, 'qtext' : qtext, 'answer' : answer});
@@ -279,7 +294,7 @@ OKCPAT.getQuestionsAnsweredByUserId = function (userid) {
         'url': OKCPAT.getServerUrl('/' + userid),
         'onload': function (response) {
             var json = JSON.parse(response.responseText);
-            if (json) {
+            if (json && (json.status === 200)) {
                 // add a timestamp of when we last fetched this user's info.
                 json.last_fetched = new Date().getTime();
                 OKCPAT.saveLocally(json.screenname, json);
