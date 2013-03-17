@@ -104,12 +104,15 @@ GM_addStyle('\
     content: counter(item)". ";\
 }\
 #okcpat_warning dd { margin: 0 0 1em 3em; }\
+#okcpat-first_run p { margin: 1em 0; }\
+#okcpat-first_run ul {\
+    margin: 0 2em;\
+    list-style-type: disc;\
+}\
 ');
 OKCPAT.init = function () {
-    // TODO: Create an "install" screen so that users initiall answer the
-    //       questions we need to scrape. And so they understand this thing!
-    if (false === OKCPAT.isFirstRun()) {
-        OKCPAT.doFirstRun();
+    if (OKCPAT.isFirstRun()) {
+        OKCPAT.doFirstRun(OKCPAT.getFirstRunStep());
     }
     // TODO: Define a UI for choosing topic lists?
 //    OKCPAT.CONFIG.active_topics.push('sexual_consent');
@@ -119,8 +122,22 @@ OKCPAT.init = function () {
 window.addEventListener('DOMContentLoaded', OKCPAT.init);
 
 OKCPAT.isFirstRun = function () {
-    return (OKCPAT.getValue('completed_first_run_questionnaire')) ? true : false;
+    return (OKCPAT.getValue('completed_first_run_questionnaire')) ? false : true;
 };
+OKCPAT.getFirstRunStep = function () {
+    var m = window.location.search.match(/pat_okc_first_run_step=(\d+)/);
+    if (m && m[1]) {
+        return parseInt(m[1]);
+    } else {
+        return 0;
+    }
+};
+OKCPAT.getQuestionIdOfFirstRunStep = function (step) {
+    var step = step || OKCPAT.getFirstRunStep();
+    var k = Object.keys(OKCPAT.getFlaggedQs()).reverse(); // Newer questions first.
+    return k[step];
+};
+
 OKCPAT.getServerUrl = function (path) {
     path = path || '';
     return (OKCPAT.CONFIG.debug) ?
@@ -417,40 +434,49 @@ OKCPAT.main = function () {
         OKCPAT.makeMatchQuestionsPermalinks();
         // link to suggest adding this question to the list of red flags.
         for (var i = 0; i < q.length; i++) {
-            // Construct the pre-filled Google Form URL.
-            var href = OKCPAT.getSuggestionFormUrl() + '?';
-            href += 'entry.1272351999=' + encodeURIComponent(q[i].getAttribute('id').split('_')[1]);
-            href += '&entry.734244=' + encodeURIComponent(q[i].querySelector('.qtext').textContent);
-            var possible_answers = '';
-            var concerning_answers = '';
-            var els = q[i].querySelectorAll('.self_answers li');
-            for (var x = 0; x < els.length; x++) {
-                possible_answers += els[x].textContent;
-                // Add a newline unless this is the last possible answer.
-                if (x !== (els.length - 1)) {
-                    possible_answers += "\n";
-                }
+            // but only if we're not doing the "first run" questionnaire.
+            var total_steps = Object.keys(OKCPAT.getFlaggedQs()).length;
+            var m = window.location.search.match(/pat_okc_first_run_step=(\d+)/);
+            if (!m || (m[1] > total_steps)) {
+                OKCPAT.injectRedFlagSuggestionButton(q[i]);
             }
-            els = q[i].querySelectorAll('.self_answers li:not(.match)');
-            for (x = 0; x < els.length; x++) {
-                concerning_answers += els[x].textContent;
-                if (x !== (els.length - 1)) {
-                    concerning_answers += "\n";
-                }
-            }
-            href += '&entry.1550986692=' + encodeURIComponent(possible_answers);
-            href += '&entry.2047128191=' + encodeURIComponent(concerning_answers);
-            var p = document.createElement('p');
-            p.setAttribute('class', 'btn small');
-            p.setAttribute('style', 'width: auto; max-width: 25em'); // Inline to override "!important" in CSS.
-            var a = document.createElement('a');
-            a.setAttribute('href', href);
-            a.setAttribute('target', '_blank');
-            a.innerHTML = 'Suggest as "red flag" to PAT-OKC';
-            p.appendChild(a);
-            q[i].appendChild(p);
         }
     }
+};
+
+OKCPAT.injectRedFlagSuggestionButton = function (q_el) {
+    // Construct the pre-filled Google Form URL.
+    var href = OKCPAT.getSuggestionFormUrl() + '?';
+    href += 'entry.1272351999=' + encodeURIComponent(q_el.getAttribute('id').split('_')[1]);
+    href += '&entry.734244=' + encodeURIComponent(q_el.querySelector('.qtext').textContent);
+    var possible_answers = '';
+    var concerning_answers = '';
+    var els = q_el.querySelectorAll('.self_answers li');
+    for (var x = 0; x < els.length; x++) {
+        possible_answers += els[x].textContent;
+        // Add a newline unless this is the last possible answer.
+        if (x !== (els.length - 1)) {
+            possible_answers += "\n";
+        }
+    }
+    els = q_el.querySelectorAll('.self_answers li:not(.match)');
+    for (x = 0; x < els.length; x++) {
+        concerning_answers += els[x].textContent;
+        if (x !== (els.length - 1)) {
+            concerning_answers += "\n";
+        }
+    }
+    href += '&entry.1550986692=' + encodeURIComponent(possible_answers);
+    href += '&entry.2047128191=' + encodeURIComponent(concerning_answers);
+    var p = document.createElement('p');
+    p.setAttribute('class', 'btn small');
+    p.setAttribute('style', 'width: auto; max-width: 25em'); // Inline to override "!important" in CSS.
+    var a = document.createElement('a');
+    a.setAttribute('href', href);
+    a.setAttribute('target', '_blank');
+    a.innerHTML = 'Suggest as "red flag" to PAT-OKC';
+    p.appendChild(a);
+    q_el.appendChild(p);
 };
 
 OKCPAT.findUsersOnPage = function () {
@@ -477,7 +503,160 @@ OKCPAT.flagUser = function (name) {
     }
 };
 
-OKCPAT.doFirstRun = function () {
+// Dispatcher for the "first run" sequence.
+OKCPAT.doFirstRun = function (step) {
+    var step = step || 0;
+    var total_steps = Object.keys(OKCPAT.getFlaggedQs()).length;
+    OKCPAT.log('First run! Step: ' + step.toString());
+    if (0 === step) {
+        OKCPAT.startFirstRun();
+    } else if (step <= total_steps) {
+        var next_step = step + 1;
+        var cur_qid   = OKCPAT.getQuestionIdOfFirstRunStep(step - 1); // Decrement for "this step".
+        var next_qid  = OKCPAT.getQuestionIdOfFirstRunStep(step);
+        var url = window.location.protocol
+                + '//' + window.location.host
+                + '/questions?rqid=' + encodeURIComponent(next_qid)
+                + '&pat_okc_first_run_step=' + encodeURIComponent(next_step);
+        var progress_txt = " You're on step <strong>" + step.toString() + " out of " + total_steps.toString() + "</strong> of PAT-OKC's required questionnaire.";
+
+        // Remove the "Skip" button, if it's there.
+        var skp = document.querySelector('.skip_btn');
+        if (skp) {
+            skp.parentNode.removeChild(skp);
+        }
+
+        // Hide the "answer privately" option, if it's there.
+        var prv = document.querySelector('#new_question .answer_privately');
+        if (prv) {
+            prv.setAttribute('style', 'display: none;');
+        }
+
+        // Hijack the "Submit" button, if it's there.
+        var sbtn = document.getElementById('submit_btn_' + cur_qid.toString());
+        if (sbtn) { // this is actually a <p> element in OkCupid's code.
+            // Replace their JS. For some reason, this won't work with event handlers. :(
+            sbtn.firstElementChild.setAttribute('onclick',
+                'BigDig.submitAnswer(' + cur_qid.toString() + '); '
+                + 'setTimeout(function() {' + // Set a timer to redirect.
+                    'window.location = \'' + url + '\'' // to the next step
+                + '}, 2000);' // in 2 seconds.
+                + 'return false;'
+            );
+        }
+
+        // If there's a next "red flag" question,
+        if (next_qid) {
+            // Hijack the "Next question" button, if it's there.
+            var xpath = document.evaluate(
+                '//*[contains(@class, "notice")]//a[text()="Next question"]',
+                document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null
+            );
+            var nxt = (xpath.singleNodeValue) ? xpath.singleNodeValue : false;
+            if (nxt) {
+                nxt.removeAttribute('onclick'); // Erase their JS
+                // Force the button to link to the next action in our sequence.
+                nxt.setAttribute('href',
+                    '/questions?rqid=' + encodeURIComponent(next_qid)
+                    + '&pat_okc_first_run_step=' + encodeURIComponent(next_step.toString())
+                );
+            }
+        } else {
+            // otherwise, make sure there's no "Next question" button at all.
+            var nbtn = document.querySelector('.notice > p.btn');
+            if (nbtn) { nbtn.parentNode.removeChild(nbtn); }
+        }
+
+        // Customize the "Notice" text.
+        // TODO: Clean this up when we hit the "staff robot" (at 25 questions or so).
+        var el = document.querySelector('.notice') || document.getElementById('guide_text');
+        var nx = el.getAttribute('class').match(/green|pink|sr_message/);
+        if (!nx) {
+            // Neither "green" or "pink" (or the "staff robot") means we've answered but can re-answer.
+            var txt = 'Looks like you already answered this important PAT-OKC question! Rock on, rockstar!';
+            el.querySelector('p:not(.btn)').setAttribute('style', 'margin-right: 140px;');
+        } else {
+            switch (nx[0]) {
+                case 'green':
+                case 'sr_message':
+                    var txt = "Yay! You're making the Internet safer with every question you answer!";
+                    break;
+                case 'pink':
+                    var txt = 'Woah there, you recently answered this question already!';
+                    el.querySelector('p:not(.btn)').setAttribute('style', 'margin-right: 140px;');
+                    // If we can't re-answer AND this is the last question,
+                    if (!next_qid) {
+                        // offer a "congrats, you're done!" link.
+                        txt += '<p class="btn small green" style="width: 160px;"><a href="' + url + '">Start using PAT-OKC!</a></p>';
+                    }
+                    break;
+            }
+        }
+        el.querySelector('p:not(.btn)').innerHTML = txt + '<br /><br />' + progress_txt;
+    } else {
+        OKCPAT.finishFirstRun();
+    }
+};
+
+OKCPAT.startFirstRun = function () {
+    // Inject a pop-up.
+    var div = document.createElement('div');
+    div.setAttribute('id', 'okcpat-first_run');
+    div.setAttribute('class', 'flag_pop text_attached shadowbox');
+    div.setAttribute('style', 'display: block; width: 700px; position: absolute; left: 30px');
+    var html = '<div class="container">';
+    html += '<h1>Thank you for installing the <a href="https://github.com/meitar/pat-okc/#readme">Predator Alert Tool for OkCupid</a>!</h1>';
+    html += '<p>The Predator Alert Tool for OkCupid (PAT-OKC) is <strong>an early-warning system</strong> that highlights especially concerning behavior ("red flags") that potentially predatory or abusive OkCupid users tend to engage in, or post on OkCupid.com.</p>';
+    html += '<p>However, it <strong>is no substitute for basic <a href="http://maymay.net/blog/2013/02/20/howto-use-tor-for-all-network-traffic-by-default-on-mac-os-x/#step-6">Internet self-defense</a></strong>. PAT-OKC can only give you information to help you make better decisions; the decisions you make are still up to you. Always meet people you don\'t know from OkCupid in a public place, and consider <a href="https://yesmeansyesblog.wordpress.com/2010/04/26/what-is-a-safecall/">setting up a safe call</a> with one of your friends.</p>';
+    html += "<p>As this is the first time you've installed the Predator Alert Tool for OkCupid (PAT-OKC), <strong>in a moment you'll be asked to answer a few OkCupid Match Questions</strong> that will help ensure your Web browser has the information it needs to alert you of a potentially dangerous profile. Ready? Set?</p>";
+    var next_qid = OKCPAT.getQuestionIdOfFirstRunStep(0); // This is always the first step.
+    html += '<div class="buttons"><p class="btn small flag_button green"><a href="/questions?rqid=' + next_qid + '&pat_okc_first_run_step=1">Go!</a></p></div>';
+    html += '</div>';
+    div.innerHTML = html;
+    var el = document.querySelector('.tabbed_heading');
+    // If we're not a profile page, then get other elements out of the way.
+    if (!window.location.pathname.match(/^\/profile/)) {
+        GM_addStyle('\
+            #matches_block { z-index: 1; }\
+            .fullness, p.fullness-bar, p.fullness-bar span.progress { display: none; }\
+        ');
+        // OkC uses inline style, so alter it directly.
+        if (grr = document.querySelector('.page_tabs li[style]')) { grr.setAttribute('style', ''); }
+        el.setAttribute('style', 'z-index: 1000;' + el.getAttribute('style'));
+        div.style.top = '30px';
+    }
+    el.insertBefore(div, el.firstChild);
+};
+OKCPAT.finishFirstRun = function () {
+    // Record that we've completed the first run sequence.
+    OKCPAT.setValue('completed_first_run_questionnaire', true);
+    // Inject a pop-up.
+    var div = document.createElement('div');
+    div.setAttribute('id', 'okcpat-first_run');
+    div.setAttribute('class', 'flag_pop text_attached shadowbox');
+    div.setAttribute('style', 'display: block; width: 700px; position: absolute; left: 30px');
+    var html = '<div class="container">';
+    html += '<h1>You finished the <a href="https://github.com/meitar/pat-okc/#readme">Predator Alert Tool for OkCupid</a> questionnaire!</h1>';
+    html += '<p>You are now ready to begin using The Predator Alert Tool for OkCupid. :) Basically, that just means continuing to use OkCupid as you have been. However, there will be a few small changes:</p>';
+    html += '<ul><li><img src="http://ak2.okccdn.com/php/load_okc_image.php/images/160x160/160x160/813x237/1500x924/2/7542193099865135582.jpeg" width="40" class="okcpat_red_flagged" style="float: right; margin: 0 0 1em 1em" />If you come across the OkCupid Profile of someone who PAT-OKC thinks might be dangerous, all of their pictures and links to their profile pages will be outlined in <strong>a blocky red square</strong>, as shown. If you see such a square (in a real situation, that is, other than this example), click in it for an explanation of why that profile was flagged.</li>';
+    html += '<li>If you come across a Match Question that you think should be considered a "red flag", click the button to suggest it be added. The button looks like this: <p class="btn small" style="float: none; display: inline-block; margin: 0; width: auto;"><a href="#">Suggest as \'red flag\' to PAT-OKC</a></p></li></ul>';
+    html += '<p>And most important of all, please tell your friends about the Predator Alert Tool for OkCupid! If we work together to share information, we can all keep one another safer! To learn more about the origins of this tool and what can be done to combat rape culture from a technological perspective, read the developer\'s blog: <a href="http://maybemaimed.com/2012/12/21/tracking-rape-cultures-social-license-to-operate-online/">Tracking rape culture\'s social license to operate online</a>.</p>';
+    html += '<div class="buttons"><p class="btn small flag_button green" style="width: auto;"><a style="padding: 0 20px;" href="#" onclick="var x = document.getElementById(\'okcpat-first_run\'); x.parentNode.removeChild(x); return false;">Thanks! I feel better already!</a></p></div>';
+    html += '</div>';
+    div.innerHTML = html;
+    var el = document.querySelector('.tabbed_heading');
+    // If we're not a profile page, then get other elements out of the way.
+    if (!window.location.pathname.match(/^\/profile/)) {
+        GM_addStyle('\
+            #matches_block { z-index: 1; }\
+            .fullness, p.fullness-bar, p.fullness-bar span.progress { display: none; }\
+        ');
+        // OkC uses inline style, so alter it directly.
+        if (grr = document.querySelector('.page_tabs li[style]')) { grr.setAttribute('style', ''); }
+        el.setAttribute('style', 'z-index: 1000;' + el.getAttribute('style'));
+        div.style.top = '30px';
+    }
+    el.insertBefore(div, el.firstChild);
 };
 
 // The following is required for Chrome compatibility, as we need "text/html" parsing.
