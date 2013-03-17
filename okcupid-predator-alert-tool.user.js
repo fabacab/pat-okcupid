@@ -371,7 +371,7 @@ OKCPAT.main = function () {
         }
     }
     // If we're on a flagged user's profile page,
-    var m = window.location.pathname.match(/^\/profile\/([^?\/]+)/);
+    var m = window.location.pathname.match(/^\/profile\/([^\/]+)/);
     if (m && (m[1] in red_flags)) {
         // Grab the target IDs here.
         var targetid = OKCPAT.getTargetUserId();
@@ -405,7 +405,10 @@ OKCPAT.main = function () {
         }
         div.appendChild(dl);
         // Display this information at the top of the user's profile.
-        var before = document.getElementById('essay_0');
+        var before = document.getElementById('essay_0') // the "About" essay
+            || document.querySelector('.question') // the first Match Question
+            || document.querySelector('.description') // the first Photo Album
+            || document.getElementById('main_column').childNodes[0]; // whatever else
         before.parentNode.insertBefore(div, before);
     }
     // If there are any questions the human user can see, offer a
