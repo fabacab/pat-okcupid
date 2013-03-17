@@ -5,9 +5,9 @@
  * @author maymay <bitetheappleback@gmail.com>
  */
 // ==UserScript==
-// @name           OkCupid Self-Reported Sexual Predator Alert Tool
-// @version        0.1
-// @namespace      com.maybemaimed.okcupid.pat
+// @name           Predator Alert Tool for OkCupid
+// @version        0.2
+// @namespace      com.maybemaimed.pat.okcupid
 // @updateURL      https://userscripts.org/scripts/source/TK.user.js
 // @description    Alerts you of potential sexual predators on OkCupid based on their own answers to Match Questions patterned after Lisak and Miller's groundbreaking academic work on identifying "undetected rapists."
 // @include        http://www.okcupid.com/*
@@ -32,8 +32,31 @@ OKCPAT.CONFIG = {
     // TODO: Define more, topical "flagged_qs_*" sets of alert-worthy Q&A's.
     'flagged_qs_sexual_consent': {
         // QID : Answer
+        // These are the critical Lisak and Miller questions.
+        421567 : 'Yes',
+        423365 : 'Yes',
+        421568 : 'Yes',
+        421570 : 'Yes',
+        421572 : 'Yes',
+        421574 : 'Yes',
+        421577 : 'Yes',
+        423366 : 'Yes',
+        423369 : 'Yes',
+        // These are additional concerning questions which could eventually be
+        // moved to their own sets once that feature is implemented.
+        55349 : 'Yes.', // Have you ever thrown an object in anger during an argument?
+        // TODO: Support checking against MULTIPLE concerning answers.
+        36624 : [ // Are you ever violent with your friends?
+            'Yes, I use physical force whenever I want.',
+            'Yes, but only playfully or in jest.'
+        ]
     },
 //    // TODO: Support multiple lists of questions?
+//    'flagged_qs_violence': {
+//        55349 : 'Yes.',
+//        // TODO: Support checking against MULTIPLE concerning answers.
+//        36624 : ['Yes, I use physical force whenever I want.', 'Yes, but only playfully or in jest.']
+//    },
 //    'flagged_qs_polyamory': {
 //        784 : 'No',
 //        31581 : 'No way.'
@@ -47,7 +70,7 @@ OKCPAT.CONFIG = {
 // Utility debugging function.
 OKCPAT.log = function (msg) {
     if (!OKCPAT.CONFIG.debug) { return; }
-    GM_log('OKCUPID SRSPAT: ' + msg);
+    GM_log('PAT-OkCupid: ' + msg);
 };
 
 // Initializations.
@@ -69,6 +92,11 @@ GM_addStyle('\
 #okcpat_warning dd { margin: 0 0 1em 3em; }\
 ');
 OKCPAT.init = function () {
+    // TODO: Create an "install" screen so that users initiall answer the
+    //       questions we need to scrape. And so they understand this thing!
+    if (false === OKCPAT.isFirstRun()) {
+        OKCPAT.doFirstRun();
+    }
     // TODO: Define a UI for choosing topic lists?
 //    OKCPAT.CONFIG.active_topics.push('sexual_consent');
 //    OKCPAT.CONFIG.active_topics.push('polyamory');
@@ -76,6 +104,9 @@ OKCPAT.init = function () {
 };
 window.addEventListener('DOMContentLoaded', OKCPAT.init);
 
+OKCPAT.isFirstRun = function () {
+    return (OKCPAT.getValue('completed_first_run_questionnaire')) ? true : false;
+};
 OKCPAT.getServerUrl = function (path) {
     path = path || '';
     return (OKCPAT.CONFIG.debug) ?
@@ -375,7 +406,7 @@ OKCPAT.main = function () {
             var a = document.createElement('a');
             a.setAttribute('href', href);
             a.setAttribute('target', '_blank');
-            a.innerHTML = 'Suggest as "red flag" to OKCPAT';
+            a.innerHTML = 'Suggest as "red flag" to PAT-OKC';
             p.appendChild(a);
             q[i].appendChild(p);
         }
@@ -404,6 +435,9 @@ OKCPAT.flagUser = function (name) {
         // and highlight them with a CSS class.
         link_els[i].setAttribute('class', link_els[i].className + ' okcpat_red_flagged');
     }
+};
+
+OKCPAT.doFirstRun = function () {
 };
 
 // The following is required for Chrome compatibility, as we need "text/html" parsing.
