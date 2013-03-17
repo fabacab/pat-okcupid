@@ -56,7 +56,6 @@ OKCPAT.CONFIG = {
         // These are additional concerning questions which could eventually be
         // moved to their own sets once that feature is implemented.
         55349 : 'Yes.', // Have you ever thrown an object in anger during an argument?
-        // TODO: Support checking against MULTIPLE concerning answers.
         36624 : [ // Are you ever violent with your friends?
             'Yes, I use physical force whenever I want.',
             'Yes, but only playfully or in jest.'
@@ -299,11 +298,23 @@ OKCPAT.getQuestionsAnsweredByUserId = function (userid) {
                 json.last_fetched = new Date().getTime();
                 OKCPAT.saveLocally(json.screenname, json);
             }
-            // TODO: then we need to start looking for questions that match any of
-            // the appropriate pre-defined lists.
-            // TODO: Create a local variable store for the right Question IDs.
         }
     });
+};
+
+OKCPAT.isConcerningAnswer = function (answer, flagged_answers) {
+    OKCPAT.log('Checking answer "' + answer + '" against flagged answers: ' + flagged_answers.toString());
+    if (
+        'string' === typeof(flagged_answers)
+        &&
+        answer === flagged_answers
+        ) { return true; }
+    for (var i = 0; i < flagged_answers.length; i++) {
+        if (answer=== flagged_answers[i]) {
+            return true;
+        }
+    }
+    return false;
 };
 
 // This is the main() function, executed on page load.
@@ -337,7 +348,7 @@ OKCPAT.main = function () {
                 var x = a.indexOf(k[y]);
                 if (-1 !== x) {
                     // check their answer and, if it's concering,
-                    if (data.answers[x].answer.trim() === OKCPAT.getFlaggedQs()[k[y]].trim()) {
+                    if (OKCPAT.isConcerningAnswer(data.answers[x].answer.trim(), OKCPAT.getFlaggedQs()[k[y]])) {
                         OKCPAT.log('Found concering answer in Question ID ' + data.answers[x].qid + ' by user ' + names[i]);
                         // add the answer to their set of red flags.
                         if (names[i] in red_flags) {
