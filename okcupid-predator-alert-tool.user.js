@@ -146,6 +146,16 @@ OKCPAT.getFlaggedQs = function () {
         OKCPAT.CONFIG['flagged_qs_sexual_consent'];
 };
 
+OKCPAT.makeMatchQuestionsPermalinks = function () {
+    var els = document.querySelectorAll('#questions .qtext');
+    for (var i = 0; i < els.length; i++) {
+        var txt = els[i].innerHTML;
+        var qid = els[i].getAttribute('id').split('_')[1];
+        var a_html = '<a href="/questions?rqid=' + encodeURIComponent(qid.toString()) + '">' + txt + '</a>';
+        els[i].innerHTML = a_html;
+    }
+};
+
 // This expects JSON-formatted data.
 // TODO: Add some error-handling to these functions?
 OKCPAT.saveLocally = function (key, data) {
@@ -373,9 +383,10 @@ OKCPAT.main = function () {
         before.parentNode.insertBefore(div, before);
     }
     // If there are any questions the human user can see, offer a
-    // link to suggest adding this question to the list of red flags.
     var q = document.querySelectorAll('.question');
     if (q.length) {
+        OKCPAT.makeMatchQuestionsPermalinks();
+        // link to suggest adding this question to the list of red flags.
         for (var i = 0; i < q.length; i++) {
             // Construct the pre-filled Google Form URL.
             var href = OKCPAT.getSuggestionFormUrl() + '?';
