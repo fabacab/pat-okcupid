@@ -518,7 +518,7 @@ OKCPAT.doFirstRun = function (step) {
                 + '//' + window.location.host
                 + '/questions?rqid=' + encodeURIComponent(next_qid)
                 + '&pat_okc_first_run_step=' + encodeURIComponent(next_step);
-        var progress_txt = " You're on step <strong>" + step.toString() + " out of " + total_steps.toString() + "</strong> of PAT-OKC's required questionnaire.";
+        var progress_txt = " You're on question <strong>" + step.toString() + " out of " + total_steps.toString() + "</strong> of PAT-OKC's required questionnaire.";
 
         // Remove the "Skip" button, if it's there.
         var skp = document.querySelector('.skip_btn');
@@ -606,9 +606,9 @@ OKCPAT.startFirstRun = function () {
     div.setAttribute('style', 'display: block; width: 700px; position: absolute; left: 30px');
     var html = '<div class="container">';
     html += '<h1>Thank you for installing the <a href="https://github.com/meitar/pat-okc/#readme">Predator Alert Tool for OkCupid</a>!</h1>';
-    html += '<p>The Predator Alert Tool for OkCupid (PAT-OKC) is <strong>an early-warning system</strong> that highlights especially concerning behavior ("red flags") that potentially predatory or abusive OkCupid users tend to engage in, or post on OkCupid.com.</p>';
+    html += '<p>The Predator Alert Tool for OkCupid (PAT-OKC) is <strong>an early-warning system</strong> that highlights red flags which may be an indicator of predatory or abusive behavior.</p>';
     html += '<p>However, it <strong>is no substitute for basic <a href="http://maymay.net/blog/2013/02/20/howto-use-tor-for-all-network-traffic-by-default-on-mac-os-x/#step-6">Internet self-defense</a></strong>. PAT-OKC can only give you information to help you make better decisions; the decisions you make are still up to you. Always meet people you don\'t know from OkCupid in a public place, and consider <a href="https://yesmeansyesblog.wordpress.com/2010/04/26/what-is-a-safecall/">setting up a safe call</a> with one of your friends.</p>';
-    html += "<p>As this is the first time you've installed the Predator Alert Tool for OkCupid (PAT-OKC), <strong>in a moment you'll be asked to answer a few OkCupid Match Questions</strong> that will help ensure your Web browser has the information it needs to alert you of a potentially dangerous profile. Ready? Set?</p>";
+    html += "<p>As this is the first time you've installed the Predator Alert Tool for OkCupid (PAT-OKC), <strong>you'll be asked to answer a few OkCupid Match Questions</strong> that will help ensure your Web browser has the information it needs to alert you of a potentially dangerous profile. Ready? Set?</p>";
     var next_qid = OKCPAT.getQuestionIdOfFirstRunStep(0); // This is always the first step.
     html += '<div class="buttons"><p class="btn small flag_button green"><a href="/questions?rqid=' + next_qid + '&pat_okc_first_run_step=1">Go!</a></p></div>';
     html += '</div>';
