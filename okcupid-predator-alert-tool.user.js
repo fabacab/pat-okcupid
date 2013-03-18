@@ -310,7 +310,7 @@ OKCPAT.getQuestionsAnsweredByUserId = function (userid) {
         'url': OKCPAT.getServerUrl('/' + userid),
         'onload': function (response) {
             var json = JSON.parse(response.responseText);
-            if (json && (json.status === 200)) {
+            if (json && (response.status === 200)) {
                 // add a timestamp of when we last fetched this user's info.
                 json.last_fetched = new Date().getTime();
                 OKCPAT.saveLocally(json.screenname, json);
