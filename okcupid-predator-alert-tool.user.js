@@ -561,20 +561,21 @@ OKCPAT.doFirstRun = function (step) {
                     + '&pat_okc_first_run_step=' + encodeURIComponent(next_step.toString())
                 );
             }
-        } else {
-            // otherwise, make sure there's no "Next question" button at all.
-            var nbtn = document.querySelector('.notice > p.btn');
-            if (nbtn) { nbtn.parentNode.removeChild(nbtn); }
         }
 
-        // Customize the "Notice" text.
+        // Customize the "Notice" text, later.
         // TODO: Clean this up when we hit the "staff robot" (at 25 questions or so).
         var el = document.querySelector('.notice') || document.getElementById('guide_text');
         var nx = el.getAttribute('class').match(/green|pink|sr_message/);
         if (!nx) {
             // Neither "green" or "pink" (or the "staff robot") means we've answered but can re-answer.
             var txt = 'Looks like you already answered this important PAT-OKC question! Rock on, rockstar!';
-            el.querySelector('p:not(.btn)').setAttribute('style', 'margin-right: 140px;');
+            el.querySelector('p:not(.btn)').setAttribute('style', 'margin-right: 160px;');
+            if (!next_qid) {
+                // There's no next_qid, meaning this is the last question.
+                // so the "Next question" button should say "Congrats, you're done!"
+                txt += '<p class="btn small green" style="width: 160px;"><a href="' + url + '">Start using PAT-OKC!</a></p>';
+            }
         } else {
             switch (nx[0]) {
                 case 'green':
