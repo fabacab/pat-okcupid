@@ -429,7 +429,7 @@ OKCPAT.main = function () {
         before.parentNode.insertBefore(div, before);
     }
     // If there are any questions the human user can see, offer a
-    var q = document.querySelectorAll('.question');
+    var q = document.querySelectorAll('div.question');
     if (q.length) {
         OKCPAT.makeMatchQuestionsPermalinks();
         // link to suggest adding this question to the list of red flags.
