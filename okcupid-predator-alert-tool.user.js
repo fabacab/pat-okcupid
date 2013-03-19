@@ -543,6 +543,32 @@ OKCPAT.doFirstRun = function (step) {
                 + '}, 2000);' // in 2 seconds.
                 + 'return false;'
             );
+            // Obscure defaut OkCupid question animation while we do a reload.
+            // @see https://hacks.mozilla.org/2012/05/dom-mutationobserver-reacting-to-dom-changes-without-killing-browser-performance/
+            var MutationObserver = uw.MutationObserver || uw.WebKitMutationObserver;
+            var observer = new MutationObserver(function (mutations) {
+                mutations.forEach(function (mutation) {
+                    if (mutation.oldValue.match(/active/) && (null === mutation.target.getAttribute('class').match(/active/))) {
+                        OKCPAT.injectPopUp('Great, thanks for answering! Hang on a sec while I fetch the next question.', {
+                            'id' : 'okcpat-first_run',
+                            'class' : 'flag_pop text_attached shadowbox',
+                            'style' : {
+                                'display' : 'block',
+                                'width' : '535px',
+                                'position' : 'absolute',
+                                'left': '10px',
+                                'top' : '250px',
+                                'min-height': '750px',
+                            }
+                        });
+                    }
+                });
+            });
+            observer.observe(sbtn, {
+                'attributes': true,
+                'attributeOldValue': true
+
+            });
         }
 
         // If there's a next "red flag" question,
@@ -599,20 +625,35 @@ OKCPAT.doFirstRun = function (step) {
     }
 };
 
-OKCPAT.injectPopUp = function (id, html) {
-    // Inject a pop-up.
+OKCPAT.injectPopUp = function (html, attrs) {
+    // Initialize to empty defaults.
     var html = html || '';
+    var attrs = attrs || {
+        'id' : 'okcpat-first_run',
+        'class' : 'flag_pop text_attached shadowbox',
+        'style' : {
+            'display' : 'block',
+            'width' : '700px',
+            'position' : 'absolute',
+            'left': '30px'
+        }
+    };
+    // Inject a pop-up.
     var div = document.createElement('div');
-    div.setAttribute('id', id);
-    div.setAttribute('class', 'flag_pop text_attached shadowbox');
-    div.setAttribute('style', 'display: block; width: 700px; position: absolute; left: 30px');
+    div.setAttribute('id', attrs['id']);
+    div.setAttribute('class', attrs['class']);
+    var str_style = '';
+    for (x in attrs.style) {
+        str_style += x + ':' + attrs.style[x] + ';';
+    }
+    div.setAttribute('style', str_style);
     var inner_html = '<div class="container">';
     inner_html += html;
     inner_html += '</div>';
     div.innerHTML = inner_html;
     var el = document.querySelector('.tabbed_heading');
-    // If we're not a profile page, then get other elements out of the way.
-    if (!window.location.pathname.match(/^\/profile/)) {
+    // If we're not a profile or questions page, then get other elements out of the way.
+    if (!window.location.pathname.match(/^\/profile|^\/questions/)) {
         GM_addStyle('\
             #matches_block { z-index: 1; }\
             .fullness, p.fullness-bar, p.fullness-bar span.progress { display: none; }\
@@ -633,7 +674,7 @@ OKCPAT.startFirstRun = function () {
     html += "<p>As this is the first time you've installed the Predator Alert Tool for OkCupid (PAT-OKC), <strong>you'll be asked to answer a few OkCupid Match Questions</strong> that will help ensure your Web browser has the information it needs to alert you of a potentially dangerous profile. Ready? Set?</p>";
     var next_qid = OKCPAT.getQuestionIdOfFirstRunStep(0); // This is always the first step.
     html += '<div class="buttons"><p class="btn small flag_button green"><a href="/questions?rqid=' + next_qid + '&pat_okc_first_run_step=1">Go!</a></p></div>';
-    OKCPAT.injectPopUp('okcpat-first_run', html);
+    OKCPAT.injectPopUp(html);
 };
 OKCPAT.finishFirstRun = function () {
     // Record that we've completed the first run sequence.
@@ -641,11 +682,11 @@ OKCPAT.finishFirstRun = function () {
     // Prepare pop-up HTML.
     var html = '<h1>You finished the <a href="https://github.com/meitar/pat-okc/#readme">Predator Alert Tool for OkCupid</a> questionnaire!</h1>';
     html += '<p>You are now ready to begin using The Predator Alert Tool for OkCupid. :) Basically, that just means continuing to use OkCupid as you have been. However, there will be a few small changes:</p>';
-    html += '<ul><li><img src="http://ak2.okccdn.com/php/load_okc_image.php/images/160x160/160x160/813x237/1500x924/2/7542193099865135582.jpeg" width="40" class="okcpat_red_flagged" style="float: right; margin: 0 0 1em 1em" />If you come across the OkCupid Profile of someone who PAT-OKC thinks might be dangerous, all of their pictures and links to their profile pages will be outlined in <strong>a blocky red square</strong>, as shown. If you see such a square (in a real situation, that is, other than this example), click in it for an explanation of why that profile was flagged.</li>';
+    html += '<ul><li><img src="http://ak2.okccdn.com/php/load_okc_image.php/images/160x160/160x160/813x237/1500x924/2/7542193099865135582.jpeg" width="40" class="okcpat_red_flagged" style="float: right; margin: 0 0 1em 1em" />If you come across the OkCupid Profile of someone who PAT-OKC thinks might be dangerous, all of their pictures and links to their profile pages will be outlined in <strong>a blocky red square</strong>, as shown. If you see such a square, click in it for an explanation of why that profile was flagged.</li>';
     html += '<li>If you come across a Match Question that you think should be considered a "red flag", click the button to suggest it be added. The button looks like this: <p class="btn small" style="float: none; display: inline-block; margin: 0; width: auto;"><a href="#">Suggest as \'red flag\' to PAT-OKC</a></p></li></ul>';
     html += '<p>And most important of all, please tell your friends about the Predator Alert Tool for OkCupid! If we work together to share information, we can all keep one another safer! To learn more about the origins of this tool and what can be done to combat rape culture from a technological perspective, read the developer\'s blog: <a href="http://maybemaimed.com/2012/12/21/tracking-rape-cultures-social-license-to-operate-online/">Tracking rape culture\'s social license to operate online</a>.</p>';
     html += '<div class="buttons"><p class="btn small flag_button green" style="width: auto;"><a style="padding: 0 20px;" href="#" onclick="var x = document.getElementById(\'okcpat-first_run\'); x.parentNode.removeChild(x); return false;">Thanks! I feel better already!</a></p></div>';
-    OKCPAT.injectPopUp('okcpat-first_run', html);
+    OKCPAT.injectPopUp(html);
 };
 
 // The following is required for Chrome compatibility, as we need "text/html" parsing.
