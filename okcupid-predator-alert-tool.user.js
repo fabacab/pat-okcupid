@@ -512,7 +512,7 @@ OKCPAT.doFirstRun = function (step) {
         OKCPAT.startFirstRun();
     } else if (step <= total_steps) {
         var next_step = step + 1;
-        var cur_qid   = OKCPAT.getQuestionIdOfFirstRunStep(step - 1); // Decrement for "this step".
+        var cur_qid   = window.location.search.match(/rqid=(\d+)/)[1];
         var next_qid  = OKCPAT.getQuestionIdOfFirstRunStep(step);
         var url = window.location.protocol
                 + '//' + window.location.host
