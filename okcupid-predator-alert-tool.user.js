@@ -599,21 +599,17 @@ OKCPAT.doFirstRun = function (step) {
     }
 };
 
-OKCPAT.startFirstRun = function () {
+OKCPAT.injectPopUp = function (id, html) {
     // Inject a pop-up.
+    var html = html || '';
     var div = document.createElement('div');
-    div.setAttribute('id', 'okcpat-first_run');
+    div.setAttribute('id', id);
     div.setAttribute('class', 'flag_pop text_attached shadowbox');
     div.setAttribute('style', 'display: block; width: 700px; position: absolute; left: 30px');
-    var html = '<div class="container">';
-    html += '<h1>Thank you for installing the <a href="https://github.com/meitar/pat-okc/#readme">Predator Alert Tool for OkCupid</a>!</h1>';
-    html += '<p>The Predator Alert Tool for OkCupid (PAT-OKC) is <strong>an early-warning system</strong> that highlights red flags which may be an indicator of predatory or abusive behavior.</p>';
-    html += '<p>However, it <strong>is no substitute for basic <a href="http://maymay.net/blog/2013/02/20/howto-use-tor-for-all-network-traffic-by-default-on-mac-os-x/#step-6">Internet self-defense</a></strong>. PAT-OKC can only give you information to help you make better decisions; the decisions you make are still up to you. Always meet people you don\'t know from OkCupid in a public place, and consider <a href="https://yesmeansyesblog.wordpress.com/2010/04/26/what-is-a-safecall/">setting up a safe call</a> with one of your friends.</p>';
-    html += "<p>As this is the first time you've installed the Predator Alert Tool for OkCupid (PAT-OKC), <strong>you'll be asked to answer a few OkCupid Match Questions</strong> that will help ensure your Web browser has the information it needs to alert you of a potentially dangerous profile. Ready? Set?</p>";
-    var next_qid = OKCPAT.getQuestionIdOfFirstRunStep(0); // This is always the first step.
-    html += '<div class="buttons"><p class="btn small flag_button green"><a href="/questions?rqid=' + next_qid + '&pat_okc_first_run_step=1">Go!</a></p></div>';
-    html += '</div>';
-    div.innerHTML = html;
+    var inner_html = '<div class="container">';
+    inner_html += html;
+    inner_html += '</div>';
+    div.innerHTML = inner_html;
     var el = document.querySelector('.tabbed_heading');
     // If we're not a profile page, then get other elements out of the way.
     if (!window.location.pathname.match(/^\/profile/)) {
@@ -628,36 +624,28 @@ OKCPAT.startFirstRun = function () {
     }
     el.insertBefore(div, el.firstChild);
 };
+
+OKCPAT.startFirstRun = function () {
+    // Prepare pop-up HTML.
+    var html = '<h1>Thank you for installing the <a href="https://github.com/meitar/pat-okc/#readme">Predator Alert Tool for OkCupid</a>!</h1>';
+    html += '<p>The Predator Alert Tool for OkCupid (PAT-OKC) is <strong>an early-warning system</strong> that highlights red flags which may be an indicator of predatory or abusive behavior.</p>';
+    html += '<p>However, it <strong>is no substitute for basic <a href="http://maymay.net/blog/2013/02/20/howto-use-tor-for-all-network-traffic-by-default-on-mac-os-x/#step-6">Internet self-defense</a></strong>. PAT-OKC can only give you information to help you make better decisions; the decisions you make are still up to you. Always meet people you don\'t know from OkCupid in a public place, and consider <a href="https://yesmeansyesblog.wordpress.com/2010/04/26/what-is-a-safecall/">setting up a safe call</a> with one of your friends.</p>';
+    html += "<p>As this is the first time you've installed the Predator Alert Tool for OkCupid (PAT-OKC), <strong>you'll be asked to answer a few OkCupid Match Questions</strong> that will help ensure your Web browser has the information it needs to alert you of a potentially dangerous profile. Ready? Set?</p>";
+    var next_qid = OKCPAT.getQuestionIdOfFirstRunStep(0); // This is always the first step.
+    html += '<div class="buttons"><p class="btn small flag_button green"><a href="/questions?rqid=' + next_qid + '&pat_okc_first_run_step=1">Go!</a></p></div>';
+    OKCPAT.injectPopUp('okcpat-first_run', html);
+};
 OKCPAT.finishFirstRun = function () {
     // Record that we've completed the first run sequence.
     OKCPAT.setValue('completed_first_run_questionnaire', true);
-    // Inject a pop-up.
-    var div = document.createElement('div');
-    div.setAttribute('id', 'okcpat-first_run');
-    div.setAttribute('class', 'flag_pop text_attached shadowbox');
-    div.setAttribute('style', 'display: block; width: 700px; position: absolute; left: 30px');
-    var html = '<div class="container">';
-    html += '<h1>You finished the <a href="https://github.com/meitar/pat-okc/#readme">Predator Alert Tool for OkCupid</a> questionnaire!</h1>';
+    // Prepare pop-up HTML.
+    var html = '<h1>You finished the <a href="https://github.com/meitar/pat-okc/#readme">Predator Alert Tool for OkCupid</a> questionnaire!</h1>';
     html += '<p>You are now ready to begin using The Predator Alert Tool for OkCupid. :) Basically, that just means continuing to use OkCupid as you have been. However, there will be a few small changes:</p>';
     html += '<ul><li><img src="http://ak2.okccdn.com/php/load_okc_image.php/images/160x160/160x160/813x237/1500x924/2/7542193099865135582.jpeg" width="40" class="okcpat_red_flagged" style="float: right; margin: 0 0 1em 1em" />If you come across the OkCupid Profile of someone who PAT-OKC thinks might be dangerous, all of their pictures and links to their profile pages will be outlined in <strong>a blocky red square</strong>, as shown. If you see such a square (in a real situation, that is, other than this example), click in it for an explanation of why that profile was flagged.</li>';
     html += '<li>If you come across a Match Question that you think should be considered a "red flag", click the button to suggest it be added. The button looks like this: <p class="btn small" style="float: none; display: inline-block; margin: 0; width: auto;"><a href="#">Suggest as \'red flag\' to PAT-OKC</a></p></li></ul>';
     html += '<p>And most important of all, please tell your friends about the Predator Alert Tool for OkCupid! If we work together to share information, we can all keep one another safer! To learn more about the origins of this tool and what can be done to combat rape culture from a technological perspective, read the developer\'s blog: <a href="http://maybemaimed.com/2012/12/21/tracking-rape-cultures-social-license-to-operate-online/">Tracking rape culture\'s social license to operate online</a>.</p>';
     html += '<div class="buttons"><p class="btn small flag_button green" style="width: auto;"><a style="padding: 0 20px;" href="#" onclick="var x = document.getElementById(\'okcpat-first_run\'); x.parentNode.removeChild(x); return false;">Thanks! I feel better already!</a></p></div>';
-    html += '</div>';
-    div.innerHTML = html;
-    var el = document.querySelector('.tabbed_heading');
-    // If we're not a profile page, then get other elements out of the way.
-    if (!window.location.pathname.match(/^\/profile/)) {
-        GM_addStyle('\
-            #matches_block { z-index: 1; }\
-            .fullness, p.fullness-bar, p.fullness-bar span.progress { display: none; }\
-        ');
-        // OkC uses inline style, so alter it directly.
-        if (grr = document.querySelector('.page_tabs li[style]')) { grr.setAttribute('style', ''); }
-        el.setAttribute('style', 'z-index: 1000;' + el.getAttribute('style'));
-        div.style.top = '30px';
-    }
-    el.insertBefore(div, el.firstChild);
+    OKCPAT.injectPopUp('okcpat-first_run', html);
 };
 
 // The following is required for Chrome compatibility, as we need "text/html" parsing.
