@@ -72,6 +72,7 @@ public class OkCupidPatServlet extends HttpServlet {
             // save a new entity just as we received it from the JSON message.
             ofy().save().entity(okcusr).now();
         } else {
+            // TODO: Check each question and update any answers if they're new.
             // Else, we need to load the OkCupidUser from the datastore and
             // append the JSON data we received to the POJO before saving it.
             for (OkCupidAnswer answer : okcusr.getAnswers()) {

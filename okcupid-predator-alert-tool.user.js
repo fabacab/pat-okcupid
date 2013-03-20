@@ -6,7 +6,7 @@
  */
 // ==UserScript==
 // @name           Predator Alert Tool for OkCupid
-// @version        0.2
+// @version        0.2.1
 // @namespace      com.maybemaimed.pat.okcupid
 // @updateURL      https://userscripts.org/scripts/source/TK.user.js
 // @description    Alerts you of potential sexual predators on OkCupid based on their own answers to Match Questions patterned after Lisak and Miller's groundbreaking academic work on identifying "undetected rapists."
@@ -467,6 +467,7 @@ OKCPAT.injectRedFlagSuggestionButton = function (q_el) {
     href += '&entry.734244=' + encodeURIComponent(q_el.querySelector('.qtext').textContent);
     var possible_answers = '';
     var concerning_answers = '';
+    // TODO: Can we scrape these even if it's hidden behind a "Re-answer" button?
     var els = q_el.querySelectorAll('.self_answers li');
     for (var x = 0; x < els.length; x++) {
         possible_answers += els[x].textContent;
