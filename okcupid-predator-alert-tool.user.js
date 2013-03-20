@@ -112,7 +112,15 @@ GM_addStyle('\
 ');
 OKCPAT.init = function () {
     if (OKCPAT.isFirstRun()) {
-        OKCPAT.doFirstRun(OKCPAT.getFirstRunStep());
+        // If we've paused the "First Run" sequence,
+        if (OKCPAT.isFirstRunPaused()) {
+            // inject the "Resume" link.
+            OKCPAT.injectResumeFirstRunLink();
+        } else {
+            // If we're not paused
+            OKCPAT.deleteValue('first_run_questionnaire_paused');
+            OKCPAT.doFirstRun(OKCPAT.getFirstRunStep());
+        }
     }
     // TODO: Define a UI for choosing topic lists?
 //    OKCPAT.CONFIG.active_topics.push('sexual_consent');
@@ -136,6 +144,14 @@ OKCPAT.getQuestionIdOfFirstRunStep = function (step) {
     var step = step || OKCPAT.getFirstRunStep();
     var k = Object.keys(OKCPAT.getFlaggedQs()).reverse(); // Newer questions first.
     return k[step];
+};
+OKCPAT.isFirstRunPaused = function () {
+    // If we've actively chosen to resume, we're not "paused."
+    if (window.location.search.match(/pat_okc_first_run_unpause/)) {
+        return false;
+    } else {
+        return (OKCPAT.getValue('first_run_questionnaire_paused')) ? true : false;
+    }
 };
 
 OKCPAT.getServerUrl = function (path) {
@@ -503,6 +519,21 @@ OKCPAT.flagUser = function (name) {
     }
 };
 
+OKCPAT.injectResumeFirstRunLink = function () {
+    var step = OKCPAT.getValue('first_run_questionnaire_paused', 0);
+    var el = document.getElementById('section_navigation');
+    var li = document.createElement('li');
+    li.setAttribute('id', 'okcpat-nav_questionnaire');
+    var a = document.createElement('a');
+    var url = '/questions?rqid=' + encodeURIComponent(OKCPAT.getQuestionIdOfFirstRunStep(step));
+    url += '&pat_okc_first_run_step=' + encodeURIComponent(step.toString());
+    url += '&pat_okc_first_run_unpause';
+    a.setAttribute('href', url);
+    a.innerHTML = 'Resume PAT-OKC <span class="badge">' + step + '</span>';
+    li.appendChild(a);
+    el.firstElementChild.appendChild(li);
+};
+
 // Dispatcher for the "first run" sequence.
 OKCPAT.doFirstRun = function (step) {
     var step = step || 0;
@@ -511,6 +542,23 @@ OKCPAT.doFirstRun = function (step) {
     if (0 === step) {
         OKCPAT.startFirstRun();
     } else if (step <= total_steps) {
+        // On every 5th ask, give 'em a bit of a break, but don't re-ask when actively resuming.
+        if (0 === (step % 5) && (null === window.location.search.match(/pat_okc_first_run_unpause/))) {
+            var num = step - 1;
+            var html = '<h1>You answered ' + num + ' questions! You can pause here if you need a break.</h1>';
+            html += '<p>Wow, you are really tearing through these questions. Thank you! I know it can be draining to answer these questions, so <strong>you can pause here and come back to them later if you want to</strong>. Click the "I need a break!" button to save your spot. I\'ll wait here and, when you\'re ready to continue, click the "Resume PAT-OKC" link over on the left sidebar. And don\'t worry, <strong>you will still be alerted of potentially dangerous profiles</strong> even though you still have some questions left to go! :)</p>';
+            html += '<div class="buttons">';
+            html += '<p class="btn small flag_button green"><a href="#" onclick="var x = document.getElementById(\'okcpat-first_run\'); x.parentNode.removeChild(x); return false;">Keep going!</a></p>';
+            html += '<p class="btn small flag_button pink" style="margin-left: 1em;"><a href="#" id="okcpat-pause">I need a break!</a></p>';
+            html += '</div>';
+            OKCPAT.injectPopUp(html);
+            pause_btn = document.getElementById('okcpat-pause');
+            pause_btn.addEventListener('click', function () {
+                OKCPAT.setValue('first_run_questionnaire_paused', parseInt(step));
+                document.getElementById('okcpat-first_run').setAttribute('style', 'display: none;');
+                OKCPAT.injectResumeFirstRunLink();
+            });
+        }
         var next_step = step + 1;
         var cur_qid   = window.location.search.match(/rqid=(\d+)/)[1];
         var next_qid  = OKCPAT.getQuestionIdOfFirstRunStep(step);
