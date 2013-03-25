@@ -8,7 +8,7 @@
 // @name           Predator Alert Tool for OkCupid
 // @version        0.2.1
 // @namespace      com.maybemaimed.pat.okcupid
-// @updateURL      https://userscripts.org/scripts/source/TK.user.js
+// @updateURL      https://userscripts.org/scripts/source/163064.user.js
 // @description    Alerts you of potential sexual predators on OkCupid based on their own answers to Match Questions patterned after Lisak and Miller's groundbreaking academic work on identifying "undetected rapists."
 // @include        http://www.okcupid.com/*
 // @grant          GM_log
