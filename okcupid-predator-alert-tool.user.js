@@ -6,7 +6,7 @@
  */
 // ==UserScript==
 // @name           Predator Alert Tool for OkCupid
-// @version        0.2.1
+// @version        0.2.2
 // @namespace      com.maybemaimed.pat.okcupid
 // @updateURL      https://userscripts.org/scripts/source/163064.user.js
 // @description    Alerts you of potential sexual predators on OkCupid based on their own answers to Match Questions patterned after Lisak and Miller's groundbreaking academic work on identifying "undetected rapists."
@@ -265,13 +265,39 @@ OKCPAT.scrapeMatchQuestionsPage = function (screenname, page_num) {
 
             var my_page = (url.match(/low=(\d+)/)) ? parseInt(url.match(/low=(\d+)/)[1]) : 1 ;
             if (result_count) {
+                // TODO: Save with timestamp noting last scrape time.
+                //data.last_scraped = new Date().getTime();
+                // Share this scraped batch with the cooperative server.
                 OKCPAT.saveToServer(data);
-                // TODO: Also save locally, with timestamp noting last scrape time.
-                data.last_scraped = new Date().getTime();
-//                var data = (OKCPAT.readLocally(targetid)) ?
-//                    OKCPAT.readLocally(targetid).concat(data) :
-//                    data;
-//                OKCPAT.saveLocally(targetid, data);
+                // Also save this batch locally.
+                var ldata = OKCPAT.readLocally(screenname);
+                if (!ldata) {
+                    OKCPAT.saveLocally(screenname, data);
+                } else {
+                    // If we already have some info saved for this user,
+                    // make a list of QIDs to add from the scraped data,
+                    var answers_to_add = data.answers;
+                    // and check to see if we've already scraped this question.
+                    for (var i = 0; i < ldata.answers.length; i++) {
+                        for (var x = 0; x < data.answers.length; x++) {
+                            // If we have already saved this data locally,
+                            if (data.answers[x].qid === ldata.answers[i].qid) {
+                                OKCPAT.log(screenname + '\'s scraped QID ' + data.answers[x].qid + ' matches their locally saved QID ' + ldata.answers[i].qid);
+                                // remove that QID from the list of QIDs to save.
+                                for (var y = 0; y < answers_to_add.length; y++) {
+                                    OKCPAT.log('Removing QID ' + answers_to_add[y].qid + ' from ' + screenname + '\'s data-to-save.');
+                                    answers_to_add.splice(answers_to_add.indexOf(answers_to_add[y]), 1);
+                                }
+                            }
+                        }
+                    }
+                    // Add whatever new data remains.
+                    for (var i = 0; i < answers_to_add.length; i++) {
+                        OKCPAT.log('Adding QID ' + answers_to_add[i].qid + ' to ' + screenname + '\'s answers.');
+                        ldata.answers.push(answers_to_add[i]);
+                    }
+                    OKCPAT.saveLocally(screenname, ldata);
+                }
 
                 // We got answers from the processed page, so grab the next page, too.
                 var next_page = my_page + 10; // OkCupid increments by 10 questions per page.
