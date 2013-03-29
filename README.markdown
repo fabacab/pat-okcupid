@@ -68,6 +68,8 @@ Each of the pages listed above also contain numerous additional links. I'd recom
 
 ## Change log
 
+* Version 0.2.2:
+    * Improve local data handling so as not to rely only on a centralized server.
 * Version 0.2.1:
     * First public release.
 * Version 0.2:
