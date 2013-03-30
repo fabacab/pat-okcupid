@@ -6,7 +6,7 @@
  */
 // ==UserScript==
 // @name           Predator Alert Tool for OkCupid
-// @version        0.2.2
+// @version        0.2.3
 // @namespace      com.maybemaimed.pat.okcupid
 // @updateURL      https://userscripts.org/scripts/source/163064.user.js
 // @description    Alerts you of potential sexual predators on OkCupid based on their own answers to Match Questions patterned after Lisak and Miller's groundbreaking academic work on identifying "undetected rapists."
@@ -408,7 +408,7 @@ OKCPAT.main = function () {
                 if (-1 !== x) {
                     // check their answer and, if it's concering,
                     if (OKCPAT.isConcerningAnswer(data.answers[x].answer.trim(), OKCPAT.getFlaggedQs()[k[y]])) {
-                        OKCPAT.log('Found concering answer in Question ID ' + data.answers[x].qid + ' by user ' + names[i]);
+                        OKCPAT.log('Found concerning answer in Question ID ' + data.answers[x].qid + ' by user ' + names[i]);
                         // add the answer to their set of red flags.
                         if (names[i] in red_flags) {
                             red_flags[names[i]].push({
@@ -448,7 +448,7 @@ OKCPAT.main = function () {
         txt_el.setAttribute('class', 'text');
         var p = document.createElement('p');
         // TODO: Variablize this so it reads "NAME answered NUMBER questions about TOPIC in a concerning way..."
-        p.innerHTML = targetsn + ' answered the following questions in a concering way:';
+        p.innerHTML = targetsn + ' answered the following questions in a concerning way:';
         txt_el.appendChild(p);
         div.appendChild(txt_el);
         var dl = document.createElement('dl');

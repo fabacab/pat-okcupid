@@ -54,7 +54,14 @@ If you encounter a profile on an OkCupid page whose behavior on the site is conc
 
 Before you report a new issue with the Predator Alert Tool for OkCupid (PAT-OKC), please check to ensure your question is not already addressed in the list below.
 
+* [Can I suggest additional criteria as a "red flag"?](#can-i-suggest-additional-criteria-as-a-red-flag)
 * [Where can I learn more about this issue?](#where-can-i-learn-more-about-this-issue)
+
+### Can I suggest additional criteria as a "red flag"?
+
+Yes. If you come across an OkCupid Match Question that you think PAT-OKC should consider as a "red flag," click the "Suggest as 'red flag' to PAT-OKC" button, described above. You can also suggest Match Questions for consideration without having PAT-OKC installed by [filling in the suggestion form manually](https://docs.google.com/forms/d/15zyiFLP71Qtl6eVtACjg2SIaV9ZKAv3DpcK0d_9_Qnc/viewform). (The "Suggest" button simply pre-fills the suggestion form with as much data as it can find automatically.)
+
+If you would like to suggest new Match Questions, first [create the Match Question on OkCupid](http://www.okcupid.com/questions/create), and *then* suggest it for consideration to PAT-OKC.
 
 ### Where can I learn more about this issue?
 
@@ -68,6 +75,8 @@ Each of the pages listed above also contain numerous additional links. I'd recom
 
 ## Change log
 
+* Version 0.2.3:
+    * Fixed typo in user interface. :) What? I'm human, too.
 * Version 0.2.2:
     * Improve local data handling so as not to rely only on a centralized server.
 * Version 0.2.1:
