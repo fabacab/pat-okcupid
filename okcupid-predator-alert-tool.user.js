@@ -743,7 +743,7 @@ OKCPAT.injectPopUp = function (html, attrs) {
 
 OKCPAT.startFirstRun = function () {
     // Prepare pop-up HTML.
-    var html = '<h1>Thank you for installing the <a href="https://github.com/meitar/pat-okc/#readme">Predator Alert Tool for OkCupid</a>!</h1>';
+    var html = '<h1>Thank you for installing the <a href="https://github.com/meitar/pat-okcupid/#readme">Predator Alert Tool for OkCupid</a>!</h1>';
     html += '<p>The Predator Alert Tool for OkCupid (PAT-OKC) is <strong>an early-warning system</strong> that highlights red flags which may be an indicator of predatory or abusive behavior.</p>';
     html += '<p>However, it <strong>is no substitute for basic <a href="http://maymay.net/blog/2013/02/20/howto-use-tor-for-all-network-traffic-by-default-on-mac-os-x/#step-6">Internet self-defense</a></strong>. PAT-OKC can only give you information to help you make better decisions; the decisions you make are still up to you. Always meet people you don\'t know from OkCupid in a public place, and consider <a href="https://yesmeansyesblog.wordpress.com/2010/04/26/what-is-a-safecall/">setting up a safe call</a> with one of your friends.</p>';
     html += "<p>As this is the first time you've installed the Predator Alert Tool for OkCupid (PAT-OKC), <strong>you'll be asked to answer a few OkCupid Match Questions</strong> that will help ensure your Web browser has the information it needs to alert you of a potentially dangerous profile. Ready? Set?</p>";
@@ -755,7 +755,7 @@ OKCPAT.finishFirstRun = function () {
     // Record that we've completed the first run sequence.
     OKCPAT.setValue('completed_first_run_questionnaire', true);
     // Prepare pop-up HTML.
-    var html = '<h1>You finished the <a href="https://github.com/meitar/pat-okc/#readme">Predator Alert Tool for OkCupid</a> questionnaire!</h1>';
+    var html = '<h1>You finished the <a href="https://github.com/meitar/pat-okcupid/#readme">Predator Alert Tool for OkCupid</a> questionnaire!</h1>';
     html += '<p>You are now ready to begin using The Predator Alert Tool for OkCupid. :) Basically, that just means continuing to use OkCupid as you have been. However, there will be a few small changes:</p>';
     html += '<ul><li><img src="http://ak2.okccdn.com/php/load_okc_image.php/images/160x160/160x160/813x237/1500x924/2/7542193099865135582.jpeg" width="40" class="okcpat_red_flagged" style="float: right; margin: 0 0 1em 1em" />If you come across the OkCupid Profile of someone who PAT-OKC thinks might be dangerous, all of their pictures and links to their profile pages will be outlined in <strong>a blocky red square</strong>, as shown. If you see such a square, click in it for an explanation of why that profile was flagged.</li>';
     html += '<li>If you come across a Match Question that you think should be considered a "red flag", click the button to suggest it be added. The button looks like this: <p class="btn small" style="float: none; display: inline-block; margin: 0; width: auto;"><a href="#">Suggest as \'red flag\' to PAT-OKC</a></p></li></ul>';
