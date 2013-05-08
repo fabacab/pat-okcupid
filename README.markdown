@@ -57,7 +57,7 @@ If you encounter a profile on an OkCupid page whose behavior on the site is conc
 Before you report a new issue with the Predator Alert Tool for OkCupid (PAT-OKC), please check to ensure your question is not already addressed in the list below.
 
 * [Can I suggest additional criteria as a "red flag"?](#can-i-suggest-additional-criteria-as-a-red-flag)
-* [Why are profiles I've never visited showing up on my "You recently visited" list?](#why-are-profiles-i-ve-never-visited-showing-up-on-my-you-recently-visited-list)
+* [Why are profiles I've never visited showing up on my "You recently visited" list?](#why-are-profiles-ive-never-visited-showing-up-on-my-you-recently-visited-list)
 * [Where can I learn more about this issue?](#where-can-i-learn-more-about-this-issue)
 
 ### Can I suggest additional criteria as a "red flag"?
@@ -90,6 +90,7 @@ Each of the pages listed above also contain numerous additional links. I'd recom
 
 * Version 0.2.4:
     * [Issue #3](https://github.com/meitar/pat-okcupid/issues/3#issuecomment-17585020): Improve performance. This may resolve some reported crashes, particulary on Firefox, too. (Thanks, [focalintent](https://twitter.com/focalintent)!)
+    * [Fixed bug #1](https://github.com/meitar/pat-okcupid/issues/1): PAT-OKC now remembers your place in the questionnaire, even if you forget to "pause."
     * Fixed broken links in some pop-up messages.
 * Version 0.2.3:
     * Fixed typo in user interface. :) What? I'm human, too.
