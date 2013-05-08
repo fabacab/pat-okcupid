@@ -276,22 +276,30 @@ OKCPAT.scrapeMatchQuestionsPage = function (screenname, page_num) {
                 } else {
                     // If we already have some info saved for this user,
                     // make a list of QIDs to add from the scraped data,
-                    var answers_to_add = data.answers;
-                    // and check to see if we've already scraped this question.
+                    var answers_to_add = [];
+
+                    // Change the "ldata" data structure so it's indexed by QID!
+                    // see https://github.com/meitar/pat-okcupid/issues/3#issuecomment-17585020
+                    var local_answers = {};
                     for (var i = 0; i < ldata.answers.length; i++) {
-                        for (var x = 0; x < data.answers.length; x++) {
-                            // If we have already saved this data locally,
-                            if (data.answers[x].qid === ldata.answers[i].qid) {
-                                OKCPAT.log(screenname + '\'s scraped QID ' + data.answers[x].qid + ' matches their locally saved QID ' + ldata.answers[i].qid);
-                                // remove that QID from the list of QIDs to save.
-                                for (var y = 0; y < answers_to_add.length; y++) {
-                                    OKCPAT.log('Removing QID ' + answers_to_add[y].qid + ' from ' + screenname + '\'s data-to-save.');
-                                    answers_to_add.splice(answers_to_add.indexOf(answers_to_add[y]), 1);
-                                }
-                            }
+                        local_answers[ldata.answers[i].qid] = {
+                            qtext  : ldata.answers[i].qtext,
+                            answer : ldata.answers[i].answer
+                        };
+                    }
+
+                    // For each question we've scraped,
+                    for (var x = 0; x < data.answers.length; x++) {
+                        // check if we already saved a Match Question with that QID.
+                        if (local_answers[data.answers[x].qid]) {
+                            OKCPAT.log(screenname + '\'s scraped QID ' + data.answers[x].qid + ' matches their locally saved QID.');
+                        } else {
+                            // If we haven't, add it to our list.
+                            OKCPAT.log(screenname + '\'s scraped QID ' + data.answers[x].qid + ' does not match a locally saved QID.');
+                            answers_to_add.push(data.answers[x]);
                         }
                     }
-                    // Add whatever new data remains.
+                    // Add whatever new data we found.
                     for (var i = 0; i < answers_to_add.length; i++) {
                         OKCPAT.log('Adding QID ' + answers_to_add[i].qid + ' to ' + screenname + '\'s answers.');
                         ldata.answers.push(answers_to_add[i]);
