@@ -28,6 +28,8 @@ To install the Predator Alert Tool for OkCupid, go to [http://maybemaimed.com/pl
 
 > [Download and install Predator Alert Tool for OkCupid](https://userscripts.org/scripts/source/163064.user.js)
 
+There's also a fantastic, thorough [installation walkthrough (with screenshots!) you can follow](https://unquietpirate.wordpress.com/2013/04/04/how-to-install-the-predator-alert-tool-for-okcupid/).
+
 If you enjoy this script, please consider tossing a few metaphorical coins in [my cyberbusking hat](http://maybemaimed.com/cyberbusking/). :) Your donations are sincerely appreciated! Can't afford to part with any coin? It's cool. [Tweet your appreciation, instead](https://twitter.com/intent/tweet?text=Early+warning+of+tornados%3F+Check.+Want+an+early+warning+system+for+%23rape+%23culture%3F+http%3A%2F%2Fmaybemaimed.com%2Fplayground%2Fpredator-alert-tool-for-okcupid%2F+Predator+Alert+%23Tool+for+%40OkCupid.).
 
 If [maybemaimed.com is censored](http://maybemaimed.com/where-im-censored/) where you are, you can alternatively go to [the Userscripts.org page for Predator Alert Tool for OkCupid](https://userscripts.org/scripts/show/163064) and click on "[Install](http://userscripts.org/scripts/source/163064.user.js)". If the tool is also unavailable there, you can alternatively [download PAT-OKC from GitHub.com](https://github.com/meitar/pat-okcupid/raw/master/okcupid-predator-alert-tool.user.js).
@@ -55,6 +57,7 @@ If you encounter a profile on an OkCupid page whose behavior on the site is conc
 Before you report a new issue with the Predator Alert Tool for OkCupid (PAT-OKC), please check to ensure your question is not already addressed in the list below.
 
 * [Can I suggest additional criteria as a "red flag"?](#can-i-suggest-additional-criteria-as-a-red-flag)
+* [Why are profiles I've never visited showing up on my "You recently visited" list?](#why-are-profiles-i-ve-never-visited-showing-up-on-my-you-recently-visited-list)
 * [Where can I learn more about this issue?](#where-can-i-learn-more-about-this-issue)
 
 ### Can I suggest additional criteria as a "red flag"?
@@ -62,6 +65,16 @@ Before you report a new issue with the Predator Alert Tool for OkCupid (PAT-OKC)
 Yes. If you come across an OkCupid Match Question that you think PAT-OKC should consider as a "red flag," click the "Suggest as 'red flag' to PAT-OKC" button, described above. You can also suggest Match Questions for consideration without having PAT-OKC installed by [filling in the suggestion form manually](https://docs.google.com/forms/d/15zyiFLP71Qtl6eVtACjg2SIaV9ZKAv3DpcK0d_9_Qnc/viewform). (The "Suggest" button simply pre-fills the suggestion form with as much data as it can find automatically.)
 
 If you would like to suggest new Match Questions, first [create the Match Question on OkCupid](http://www.okcupid.com/questions/create), and *then* suggest it for consideration to PAT-OKC.
+
+### Why are profiles I've never visited showing up on my "You recently visited" list?
+
+Part of the way PAT-OKC works is by "looking" at the public answers to Match Questions other users provided on their profiles. To do this, PAT-OKC needs to load those profiles. It does exactly what you do when you look at other people's answers; it loads their pages!
+
+Since PAT-OKC loads their profile, OkCupid thinks you've "visited" their profile. This is normal and, unfortunately, unavoidable for as long as OkCupid doesn't provide an officially supported way to do what PAT-OKC does. (Feel free to contact them and let them know you want them to change this!)
+
+In the mean time, however, this means other users may be getting notified that you've "visited" their profile. OkCupid does provide an option for you to browse anonymously. This means that even if you visit someone's profile, you won't show up in their "visitors" list, even though they will still show up in your "You recently visited" list.
+
+You can [learn more about "browsing openly" on OkCupid's privacy help page](https://www.okcupid.com/help/privacy#browsing_openly).
 
 ### Where can I learn more about this issue?
 
@@ -75,6 +88,9 @@ Each of the pages listed above also contain numerous additional links. I'd recom
 
 ## Change log
 
+* Version 0.2.4:
+    * [Issue #3](https://github.com/meitar/pat-okcupid/issues/3#issuecomment-17585020): Improve performance. This may resolve some reported crashes, particulary on Firefox, too. (Thanks, [focalintent](https://twitter.com/focalintent)!)
+    * Fixed broken links in some pop-up messages.
 * Version 0.2.3:
     * Fixed typo in user interface. :) What? I'm human, too.
 * Version 0.2.2:
