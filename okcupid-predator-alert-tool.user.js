@@ -577,6 +577,8 @@ OKCPAT.doFirstRun = function (step) {
     if (0 === step) {
         OKCPAT.startFirstRun();
     } else if (step <= total_steps) {
+        // Save where we are, in case the user goes away from the questionnaire.
+        OKCPAT.setValue('first_run_questionnaire_paused', step);
         // On every 5th ask, give 'em a bit of a break, but don't re-ask when actively resuming.
         if (0 === (step % 5) && (null === window.location.search.match(/pat_okc_first_run_unpause/))) {
             var num = step - 1;
@@ -600,7 +602,8 @@ OKCPAT.doFirstRun = function (step) {
         var url = window.location.protocol
                 + '//' + window.location.host
                 + '/questions?rqid=' + encodeURIComponent(next_qid)
-                + '&pat_okc_first_run_step=' + encodeURIComponent(next_step);
+                + '&pat_okc_first_run_step=' + encodeURIComponent(next_step)
+                + '&pat_okc_first_run_unpause'; // Force "unpause" since we're activating the next step.
         var progress_txt = " You're on question <strong>" + step.toString() + " out of " + total_steps.toString() + "</strong> of PAT-OKC's required questionnaire.";
 
         // Remove the "Skip" button, if it's there.
@@ -668,6 +671,7 @@ OKCPAT.doFirstRun = function (step) {
                 nxt.setAttribute('href',
                     '/questions?rqid=' + encodeURIComponent(next_qid)
                     + '&pat_okc_first_run_step=' + encodeURIComponent(next_step.toString())
+                    + '&pat_okc_first_run_unpause'
                 );
             }
         }
