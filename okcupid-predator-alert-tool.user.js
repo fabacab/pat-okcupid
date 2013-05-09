@@ -578,7 +578,7 @@ OKCPAT.doFirstRun = function (step) {
         OKCPAT.startFirstRun();
     } else if (step <= total_steps) {
         // Save where we are, in case the user goes away from the questionnaire.
-        OKCPAT.setValue('first_run_questionnaire_paused', step);
+        OKCPAT.setValue('first_run_questionnaire_paused', step - 1); // Save last step.
         // On every 5th ask, give 'em a bit of a break, but don't re-ask when actively resuming.
         if (0 === (step % 5) && (null === window.location.search.match(/pat_okc_first_run_unpause/))) {
             var num = step - 1;
