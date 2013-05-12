@@ -22,6 +22,7 @@
 var OKCPAT = {};
 OKCPAT.CONFIG = {
     'debug': false, // switch to true to debug.
+    'version': '0.3', // used to perform clean up, etc. during init()
     'storage_server_url': 'http://okcupid-pat.appspot.com/okcupid_pat', // Our centralized database.
     'storage_server_url_development': 'http://localhost:8080/okcupid_pat', // A dev server, for when 'debug' is true.
     'red_flag_suggestion_form_url': 'https://docs.google.com/forms/d/15zyiFLP71Qtl6eVtACjg2SIaV9ZKAv3DpcK0d_9_Qnc/viewform',
@@ -138,6 +139,20 @@ GM_addStyle('\
 }\
 ');
 OKCPAT.init = function () {
+    if (OKCPAT.isUpdatedVersion()) {
+        // Code to run when we get updated to a new version.
+        // TODO: Modularize this, eventually?
+        OKCPAT.log('Updated version found.');
+        if (OKCPAT.isFirstRunPaused() || OKCPAT.getValue('completed_first_run_questionnaire')) {
+            window.location =
+                window.location.protocol + '//' + window.location.host
+                + '/questions?rqid=' + OKCPAT.getQuestionIdOfFirstRunStep(0) +
+                '&pat_okc_rerun_first_run&pat_okc_first_run_step=1&pat_okc_first_run_unpause';
+        }
+        // Update our installed version string.
+        OKCPAT.setValue('version', OKCPAT.CONFIG.version);
+        return; // Stop everything, let the reload happen.
+    }
     if (OKCPAT.isFirstRun()) {
         // If we've paused the "First Run" sequence,
         if (OKCPAT.isFirstRunPaused()) {
@@ -156,8 +171,31 @@ OKCPAT.init = function () {
 };
 window.addEventListener('DOMContentLoaded', OKCPAT.init);
 
+OKCPAT.isUpdatedVersion = function () {
+    var v = OKCPAT.getValue('version', '0.0.0'); // Default is "version zero."
+    OKCPAT.log('Check version ' + OKCPAT.CONFIG.version + ' against ' + v + '.');
+    return (0 < OKCPAT.compareVersions(OKCPAT.CONFIG.version, v)) ? true : false;
+};
+OKCPAT.compareVersions = function (a, b) {
+    var v1 = a.split('.');
+    var v2 = b.split('.');
+    for (var i = 0; i < Math.min(v1.length, v2.length); i++) {
+        var res = v1[i] - v2[i];
+        if (res != 0) {
+            return res;
+        }
+    }
+    return 0;
+}
+
 OKCPAT.isFirstRun = function () {
-    return (OKCPAT.getValue('completed_first_run_questionnaire')) ? false : true;
+    var m = window.location.search.match(/pat_okc_rerun_first_run/);
+    if (m) { // First run was completed, but questionnaire got updated.
+        OKCPAT.deleteValue('completed_first_run_questionnaire');
+        return true;
+    } else {
+        return (OKCPAT.getValue('completed_first_run_questionnaire')) ? false : true;
+    }
 };
 OKCPAT.getFirstRunStep = function () {
     var m = window.location.search.match(/pat_okc_first_run_step=(\d+)/);
@@ -604,6 +642,15 @@ OKCPAT.doFirstRun = function (step) {
     if (0 === step) {
         OKCPAT.startFirstRun();
     } else if (step <= total_steps) {
+        // If we're re-running this questionnaire because of updates, let the user know.
+        if (window.location.search.match(/pat_okc_rerun_first_run/)) {
+            // Prepare pop-up HTML.
+            var html = '<h1>The <a href="https://github.com/meitar/pat-okcupid/#readme">Predator Alert Tool for OkCupid</a> has been updated!</h1>';
+            html += '<p>You downloaded an update to the Predator Alert Tool for OkCupid (PAT-OKC). As part of this update, new Match Questions were added. Please take a moment to review the PAT-OKC questionnaire to make sure you answered all the required questions.</p>';
+            html += '<p>Answering the PAT-OKC questionnaire makes sure your browser has all the information it needs to flag the profiles of users who have answered these questions in a concerning way.</p>';
+            html += '<div class="buttons"><p class="btn small flag_button blue" style="width: auto;"><a style="padding: 0 20px;" href="#" onclick="var x = document.getElementById(\'okcpat-first_run\'); x.parentNode.removeChild(x); return false;">Ok</a></p></div>';
+            OKCPAT.injectPopUp(html);
+        }
         // Save where we are, in case the user goes away from the questionnaire.
         OKCPAT.setValue('first_run_questionnaire_paused', step - 1); // Save last step.
         var next_step = step + 1;
