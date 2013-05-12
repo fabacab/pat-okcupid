@@ -32,7 +32,7 @@ OKCPAT.CONFIG = {
     // TODO: Define more, topical "flagged_qs_*" sets of alert-worthy Q&A's.
     'flagged_qs_sexual_consent': {
         // QID : Answer
-        // These are the critical Lisak and Miller questions.
+        // These are the critical Lisak and Miller questions with "Yes." and "No." answers.
         421567 : 'Yes',
         423365 : 'Yes',
         421568 : 'Yes',
@@ -42,6 +42,33 @@ OKCPAT.CONFIG = {
         421577 : 'Yes',
         423366 : 'Yes',
         423369 : 'Yes',
+        // And these are the gradiated McWhorter questions. McWhorter's study asks for answers on
+        // an 11-point scale, but OkCupid only allows a maximum of 4 possible answers.
+        430229 : [
+            "Yes, once.",
+            "Yes, a few times. (2 to 4 attempts.)",
+            "Yes, many times. (5 or more attempts.)"
+        ],
+        428187 : [
+            "Yes, once.",
+            "Yes, a few times. (2 to 4 attempts.)",
+            "Yes, many times. (5 or more attempts.)"
+        ],
+        428188 : [
+            "Yes, once.",
+            "Yes, a few times. (2 to 4 attempts.)",
+            "Yes, many times. (5 or more attempts.)"
+        ],
+        430230 : [
+            "Yes, once.",
+            "Yes, a few times. (2 to 4 attempts.)",
+            "Yes, many times. (5 or more attempts.)"
+        ],
+        430232 : [
+            "Yes, once.",
+            "Yes, a few times. (2 to 4 attempts.)",
+            "Yes, many times. (5 or more attempts.)"
+        ],
         // These are additional concerning questions regarding sexual consent.
         21527 : 'Yes', // Do you feel there are any circumstances in which a person is obligated to have sex with you?
         19162 : [ // No means NO!
