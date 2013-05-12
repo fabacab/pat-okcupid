@@ -215,7 +215,7 @@ OKCPAT.isFirstRunPaused = function () {
     if (window.location.search.match(/pat_okc_first_run_unpause/)) {
         return false;
     } else {
-        return (OKCPAT.getValue('first_run_questionnaire_paused')) ? true : false;
+        return (0 <= OKCPAT.getValue('first_run_questionnaire_paused')) ? true : false;
     }
 };
 
