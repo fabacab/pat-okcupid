@@ -4,7 +4,7 @@ The Predator Alert Tool for OkCupid (PAT-OKC) is an add-on to your Web browser t
 
 > Have you ever been in a situation where you tried, but for various reasons did not succeed, in having sexual intercourse with an adult by using or threatening to use physical force (twisting their arm, holding them down, etc.) if they did not cooperate?
 
-This is not a hypothetical question, nor is the answer universally obvious. This is, in fact, the exact phrasing of a question used in a study called "Repeat Rape and Multiple Offending Among Undetected Rapists" by David Lisak and Paul M. Miller, published in Violence and Victims, Vol 17, No. 1, 2002 (Lisak and Miller 2002).
+This is not a hypothetical question, nor is the answer universally obvious. This is, in fact, the exact phrasing of a question used in a study called "Repeat Rape and Multiple Offending Among Undetected Rapists" by David Lisak and Paul M. Miller, published in Violence and Victims, Vol 17, No. 1, 2002 (Lisak and Miller 2002). This finding was essentially duplicated in a similar study called ["Reports of Rape Reperpetration by Newly Enlisted Male Navy Personnel" by Stephanie K. McWhorter, et. al., published in Violence and Victims, Volume 24, No. 2, 2009 (McWhorter 2009)](http://ncherm.org/documents/McWhorterVV2009.pdf).
 
 Tragically, *a statistically significant portion of respondents answered in the affirmative.* While much smaller than the portion of respondents who answered with a "no," the fact that some people blithely answered "yes" makes these questions worth asking up-front, to everyone, all the time. The Predator Alert Tool for OkCupid automates this process and issues warnings if its heuristics find a concerning match.
 
@@ -88,6 +88,10 @@ Each of the pages listed above also contain numerous additional links. I'd recom
 
 ## Change log
 
+* Version 0.3:
+    * Add survey questions from [McWhorter's 2009 study](http://ncherm.org/documents/McWhorterVV2009.pdf) to flag questions set.
+    * Fix bug where pausing the questionnaire before answering the first question resulted in unpredictable behavior.
+    * Add simple version check mechanism.
 * Version 0.2.4:
     * [Issue #3](https://github.com/meitar/pat-okcupid/issues/3#issuecomment-17585020): Improve performance. This may resolve some reported crashes, particulary on Firefox, too. (Thanks, [focalintent](https://twitter.com/focalintent)!)
     * [Fixed bug #1](https://github.com/meitar/pat-okcupid/issues/1): PAT-OKC now remembers your place in the questionnaire, even if you forget to "pause."
