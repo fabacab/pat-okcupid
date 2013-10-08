@@ -4,11 +4,11 @@ The Predator Alert Tool for OkCupid (PAT-OKC) is an add-on to your Web browser t
 
 > Have you ever been in a situation where you tried, but for various reasons did not succeed, in having sexual intercourse with an adult by using or threatening to use physical force (twisting their arm, holding them down, etc.) if they did not cooperate?
 
-This is not a hypothetical question, nor is the answer universally obvious. This is, in fact, the exact phrasing of a question used in a study called "Repeat Rape and Multiple Offending Among Undetected Rapists" by David Lisak and Paul M. Miller, published in Violence and Victims, Vol 17, No. 1, 2002 (Lisak and Miller 2002). This finding was essentially duplicated in a similar study called ["Reports of Rape Reperpetration by Newly Enlisted Male Navy Personnel" by Stephanie K. McWhorter, et. al., published in Violence and Victims, Volume 24, No. 2, 2009 (McWhorter 2009)](http://ncherm.org/documents/McWhorterVV2009.pdf).
+This is not a hypothetical question, nor is the answer universally obvious. This is, in fact, the exact phrasing of a question used in a study called "Repeat Rape and Multiple Offending Among Undetected Rapists" by David Lisak and Paul M. Miller, published in Violence and Victims, Vol 17, No. 1, 2002 (Lisak and Miller 2002).
 
-Tragically, *a statistically significant portion of respondents answered in the affirmative.* While much smaller than the portion of respondents who answered with a "no," the fact that some people blithely answered "yes" makes these questions worth asking up-front, to everyone, all the time. The Predator Alert Tool for OkCupid automates this process and issues warnings if its heuristics find a concerning match.
+Tragically, *a statistically significant portion of respondents answered in the affirmative.* This finding was essentially duplicated in a similar study called ["Reports of Rape Reperpetration by Newly Enlisted Male Navy Personnel" by Stephanie K. McWhorter, et. al., published in Violence and Victims, Volume 24, No. 2, 2009 (McWhorter 2009)](http://ncherm.org/documents/McWhorterVV2009.pdf). While much smaller than the portion of respondents who answered with a "no," the fact that some people blithely answered "yes" makes these questions worth asking up-front, to everyone, all the time.
 
-This early warning system can help OkCupid users make better informed choices about what measures they feel they need to take to remain safe while using the service.
+The Predator Alert Tool for OkCupid automates this process and issues warnings if its heuristics find a concerning match. This early warning system can help OkCupid users make better informed choices about what measures they feel they need to take to remain safe while using the service.
 
 ## System requirements
 
