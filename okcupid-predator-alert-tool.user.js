@@ -573,15 +573,15 @@ OKCPAT.main = function () {
 
 OKCPAT.injectRedFlagSuggestionButton = function (q_el) {
     // Construct the pre-filled Google Form URL.
+    var qid = q_el.getAttribute('id').match(/\d+$/)[0];
     var href = OKCPAT.getSuggestionFormUrl() + '?';
-    href += 'entry.1272351999=' + encodeURIComponent(q_el.getAttribute('id').split('_')[1]);
+    href += 'entry.1272351999=' + encodeURIComponent(qid);
     href += '&entry.734244=' + encodeURIComponent(q_el.querySelector('.qtext').textContent);
     var possible_answers = '';
     var concerning_answers = '';
-    // TODO: Can we scrape these even if it's hidden behind a "Re-answer" button?
-    var els = q_el.querySelectorAll('.self_answers li');
+    var els = q_el.querySelectorAll('[id^="question_' + qid + '_qans"]');
     for (var x = 0; x < els.length; x++) {
-        possible_answers += els[x].textContent;
+        possible_answers += els[x].value;
         // Add a newline unless this is the last possible answer.
         if (x !== (els.length - 1)) {
             possible_answers += "\n";
