@@ -18,7 +18,7 @@
  */
 // ==UserScript==
 // @name           Predator Alert Tool for OkCupid
-// @version        0.3
+// @version        0.4
 // @namespace      com.maybemaimed.pat.okcupid
 // @updateURL      https://userscripts.org/scripts/source/163064.user.js
 // @description    Alerts you of potential sexual predators on OkCupid based on their own answers to Match Questions patterned after Lisak and Miller's groundbreaking academic work on identifying "undetected rapists."
@@ -34,17 +34,24 @@
 var OKCPAT = {};
 OKCPAT.CONFIG = {
     'debug': false, // switch to true to debug.
-    'version': '0.3', // used to perform clean up, etc. during init()
+    'version': '0.4', // used to perform clean up, etc. during init()
     'storage_server_url': 'http://okcupid-pat.appspot.com/okcupid_pat', // Our centralized database.
     'storage_server_url_development': 'http://localhost:8080/okcupid_pat', // A dev server, for when 'debug' is true.
     'red_flag_suggestion_form_url': 'https://docs.google.com/forms/d/15zyiFLP71Qtl6eVtACjg2SIaV9ZKAv3DpcK0d_9_Qnc/viewform',
     'red_flag_suggestion_form_url_development': 'https://docs.google.com/forms/d/1vddPhUKBq08yhaWgCQvtMCWoUA6YFIFV9rH9OAz9PsM/viewform',
-    // TODO: A configuration option to select active sets?
-    //'active_topics': [], // List of topics to match questions against.
     // Define list of flagged Lisak and Miller Q&A's by OkCupid Question IDs.
-    // TODO: Define more, topical "flagged_qs_*" sets of alert-worthy Q&A's.
+    // The flagged_qs_sexual_consent object is a built-in that always triggers
+    // a red-flag when hit. The object structure is:
+    //
+    //     {
+    //         Question_ID : string_or_array
+    //     }
+    //
+    // The Question ID is numeric and must be unique. The string_or_array is an
+    // answer to the question proposed in the question ID. If a string, only an
+    // answer that matches that exact text will be flagged. If an array, each
+    // of the strings in the array is an answer that will trigger a red-flag.
     'flagged_qs_sexual_consent': {
-        // QID : Answer
         // These are the critical Lisak and Miller questions with "Yes." and "No." answers.
         421567 : 'Yes',
         423365 : 'Yes',
@@ -126,6 +133,18 @@ OKCPAT.log = function (msg) {
     if (!OKCPAT.CONFIG.debug) { return; }
     GM_log('PAT-OkCupid: ' + msg);
 };
+// Find the position of an element.
+// @see http://www.quirksmode.org/js/findpos.html
+function findPos (obj) {
+    var curleft = curtop = 0;
+    if (obj.offsetParent) {
+        do {
+            curleft += obj.offsetLeft;
+            curtop += obj.offsetTop;
+        } while (obj = obj.offsetParent);
+        return [curleft, curtop];
+    }
+};
 
 // Initializations.
 // Don't run in frames.
@@ -148,6 +167,11 @@ GM_addStyle('\
 #okcpat-first_run ul {\
     margin: 0 2em;\
     list-style-type: disc;\
+}\
+.pat-okc-btn {\
+    float: left;\
+    width: auto;\
+    margin-right: 3px;\
 }\
 ');
 OKCPAT.init = function () {
@@ -265,16 +289,28 @@ OKCPAT.deleteValue = function (x) {
 };
 
 OKCPAT.getFlaggedQs = function () {
-    return (OKCPAT.CONFIG.debug) ?
+    var question_set = (OKCPAT.CONFIG.debug) ?
         OKCPAT.CONFIG['flagged_qs_development']:
         OKCPAT.CONFIG['flagged_qs_sexual_consent'];
+    // Load user's custom set of flagged questions, if exists.
+    var custom_set = OKCPAT.readLocally('pat_okc_custom_flagged_qs');
+    if (custom_set) {
+        // Merge the custom set with the built-in set.
+        for (key in custom_set) {
+            question_set[key] = custom_set[key];
+        }
+    }
+    return question_set;
+};
+OKCPAT.getQid = function (q_el) {
+    return q_el.getAttribute('id').match(/\d+$/)[0];
 };
 
 OKCPAT.makeMatchQuestionsPermalinks = function () {
     var els = document.querySelectorAll('#questions .qtext');
     for (var i = 0; i < els.length; i++) {
         var txt = els[i].innerHTML;
-        var qid = els[i].getAttribute('id').split('_')[1];
+        var qid = OKCPAT.getQid(els[i]);
         var a_html = '<a href="/questions?rqid=' + encodeURIComponent(qid.toString()) + '">' + txt + '</a>';
         els[i].innerHTML = a_html;
     }
@@ -404,7 +440,7 @@ OKCPAT.processAnsweredQuestions = function (els, targetid, targetsn) {
     var arr_qs = [];
     // for each answered question on this page,
     for (var i = 0; i < els.length; i++) {
-        var qid    = els[i].getAttribute('id').match(/\d+$/)[0];
+        var qid    = OKCPAT.getQid(els[i]);
         var qtext  = els[i].querySelector('#qtext_' + qid).childNodes[0].textContent.trim();
         var answer = els[i].querySelector('#answer_target_' + qid).childNodes[0].textContent.trim();
         // TODO: Ask the server if we've already got a match for question X with answer Y.
@@ -566,27 +602,54 @@ OKCPAT.main = function () {
             var m = window.location.search.match(/pat_okc_first_run_step=(\d+)/);
             if (!m || (m[1] > total_steps)) {
                 OKCPAT.injectRedFlagSuggestionButton(q[i]);
+                OKCPAT.injectCustomFlagButton(q[i]);
             }
         }
     }
 };
 
+/**
+ * Generic wrapper to add a button to the OkCupid interface.
+ *
+ * @param el The parent element to append the button to.
+ * @param str The textual content of the button for the UI.
+ * @param attrs An object of attributes to assign the button.
+ * @param listener A function to attach a click event to.
+ * @return Node The injected button.
+ */
+OKCPAT.injectButton = function (el, str, attrs, listener) {
+    // Attribute defaults.
+    attrs = attrs || {};
+    var style = attrs.style || false;
+    var href = attrs.href || '#';
+    var target = attrs.target || false;
+
+    var p = document.createElement('p');
+    p.setAttribute('class', 'btn small pat-okc-btn');
+    if (style) {
+        p.setAttribute('style', style);
+    }
+    var a = document.createElement('a');
+    a.setAttribute('href', href);
+    if (target) {
+        a.setAttribute('target', target);
+    }
+    if (listener) {
+        a.addEventListener('click', listener);
+    }
+    a.innerHTML = str;
+    p.appendChild(a);
+    return el.appendChild(p);
+};
+
 OKCPAT.injectRedFlagSuggestionButton = function (q_el) {
     // Construct the pre-filled Google Form URL.
-    var qid = q_el.getAttribute('id').match(/\d+$/)[0];
+    var qid = OKCPAT.getQid(q_el);
     var href = OKCPAT.getSuggestionFormUrl() + '?';
     href += 'entry.1272351999=' + encodeURIComponent(qid);
     href += '&entry.734244=' + encodeURIComponent(q_el.querySelector('.qtext').textContent);
-    var possible_answers = '';
+    var possible_answers = OKCPAT.getPossibleAnswers(q_el);
     var concerning_answers = '';
-    var els = q_el.querySelectorAll('[id^="question_' + qid + '_qans"]');
-    for (var x = 0; x < els.length; x++) {
-        possible_answers += els[x].value;
-        // Add a newline unless this is the last possible answer.
-        if (x !== (els.length - 1)) {
-            possible_answers += "\n";
-        }
-    }
     els = q_el.querySelectorAll('.self_answers li:not(.match)');
     for (x = 0; x < els.length; x++) {
         concerning_answers += els[x].textContent;
@@ -596,15 +659,158 @@ OKCPAT.injectRedFlagSuggestionButton = function (q_el) {
     }
     href += '&entry.1550986692=' + encodeURIComponent(possible_answers);
     href += '&entry.2047128191=' + encodeURIComponent(concerning_answers);
-    var p = document.createElement('p');
-    p.setAttribute('class', 'btn small');
-    p.setAttribute('style', 'width: auto; max-width: 25em'); // Inline to override "!important" in CSS.
-    var a = document.createElement('a');
-    a.setAttribute('href', href);
-    a.setAttribute('target', '_blank');
-    a.innerHTML = 'Suggest as "red flag" to PAT-OKC';
-    p.appendChild(a);
-    q_el.appendChild(p);
+    OKCPAT.injectButton(q_el, 'Suggest as "red flag" to PAT-OKC', {'style': 'clear: left;', 'href': href, 'target': '_blank'});
+};
+
+/**
+ * Scrapes the possible answers of a given question.
+ *
+ * @param DOMElement q_el The OkCupid question element to scrape from.
+ * @return string Newline-separated list of textual answers.
+ */
+OKCPAT.getPossibleAnswers = function (q_el) {
+    var possible_answers = '';
+    var els = q_el.querySelectorAll('[id^="question_' + OKCPAT.getQid(q_el) + '_qans"]');
+    for (var x = 0; x < els.length; x++) {
+        possible_answers += els[x].value;
+        // Add a newline unless this is the last possible answer.
+        if (x !== (els.length - 1)) {
+            possible_answers += "\n";
+        }
+    }
+    return possible_answers;
+};
+
+OKCPAT.injectCustomFlagButton = function (q_el) {
+    // Check to see if this question is already in our custom set.
+    var qid = OKCPAT.getQid(q_el);
+    custom_set = OKCPAT.readLocally('pat_okc_custom_flagged_qs');
+    if (custom_set[qid]) {
+        // If it is, inject a "remove from my red-flags" button.
+        OKCPAT.injectButton(q_el, 'Edit this red-flag', {}, function (e) {
+            e.preventDefault();
+            OKCPAT.showEditCustomFlagPopup(q_el);
+        });
+    } else {
+        OKCPAT.injectButton(q_el, 'Add to my red-flags', {}, function (e) {
+            e.preventDefault();
+            OKCPAT.showAddCustomFlagPopup(q_el);
+        });
+    }
+};
+OKCPAT.showEditCustomFlagPopup = function (q_el) {
+    var qid = OKCPAT.getQid(q_el);
+    var html = '<h1>Edit your custom red-flag warning question</h1>';
+    html += '<p>This question is one of your custom red-flags. This means Predator Alert Tool for OkCupid is warning you whenever you view the profile of a person who answered this question with one of the checked answers.</p>';
+    html += '<form id="pat-okc-custom-flag-form">';
+    html += '<input type="hidden" id="pat_okc_custom_flag_qid" name="pat_okc_custom_flag_qid" value="' + qid + '" />';
+    var arr_ans = OKCPAT.getPossibleAnswers(q_el).split("\n");
+    var red_ans = OKCPAT.readLocally('pat_okc_custom_flagged_qs')[qid];
+    if (typeof(red_ans) === 'string') { red_ans = [red_ans] };
+    for (var i = 0; i < arr_ans.length; i++) {
+        html += '<label><input type="checkbox" value="' + arr_ans[i] + '" ';
+        for (var z = 0; z < red_ans.length; z++) {
+            if (arr_ans[i] == red_ans[z]) {
+                html += 'checked="checked"';
+            }
+        }
+        html += ' />' + arr_ans[i] + '</label>';
+    }
+    html += '</form>';
+    html += '<p class="btn green"><a id="pat-okc-save-custom-flag-btn" href="#">Save</a></p>';
+    html += '<p class="btn pink"><a id="pat-okc-delete-custom-flag-btn" href="#">Remove</a></p>';
+    OKCPAT.injectPopUp(html, {
+        'id' : 'pat-okc-edit-custom-flag-popup',
+        'class' : 'flag_pop shadowbox',
+        'style' : {
+            'display' : 'block',
+            'width' : '700px',
+            'position' : 'absolute',
+            'left': '30px',
+            'top': findPos(q_el)[1].toString() + 'px'
+        }
+    });
+    var save_btn = document.getElementById('pat-okc-save-custom-flag-btn');
+    save_btn.addEventListener('click', OKCPAT.addAsCustomFlag);
+    var remove_btn = document.getElementById('pat-okc-delete-custom-flag-btn');
+    remove_btn.addEventListener('click', OKCPAT.removeCustomFlag);
+    // Close the popup.
+    // TODO: Uh, make this its own function?
+    save_btn.addEventListener('click', function (e) {
+        var x = document.getElementById('pat-okc-edit-custom-flag-popup');
+        x.parentNode.removeChild(x);
+    });
+    remove_btn.addEventListener('click', function (e) {
+        var x = document.getElementById('pat-okc-edit-custom-flag-popup');
+        x.parentNode.removeChild(x);
+    });
+};
+OKCPAT.showAddCustomFlagPopup = function (q_el) {
+    var qid = OKCPAT.getQid(q_el);
+    var html = '<h1>Add to your custom set of red-flag warning questions</h1>';
+    html += '<p>By adding this to your custom set of red-flags, Predator Alert Tool for OkCupid will warn you whenever you view the profile of a person who answered this question in a concerning way.</p>';
+    html += '<p>Which answer(s) to the question "' + q_el.querySelector('.qtext').textContent + '" concerns you?</p>';
+    html += '<form id="pat-okc-custom-flag-form">';
+    html += '<input type="hidden" id="pat_okc_custom_flag_qid" name="pat_okc_custom_flag_qid" value="' + qid + '" />';
+    var arr_ans = OKCPAT.getPossibleAnswers(q_el).split("\n");
+    for (var i = 0; i < arr_ans.length; i++) {
+        html += '<label><input type="checkbox" value="' + arr_ans[i] + '" />' + arr_ans[i] + '</label>';
+    }
+    html += '</form>';
+    html += '<p class="btn green"><a id="pat-okc-save-custom-flag-btn" href="#">Save</a></p>';
+    OKCPAT.injectPopUp(html, {
+        'id' : 'pat-okc-add-custom-flag-popup',
+        'class' : 'flag_pop shadowbox',
+        'style' : {
+            'display' : 'block',
+            'width' : '700px',
+            'position' : 'absolute',
+            'left': '30px',
+            'top': findPos(q_el)[1].toString() + 'px'
+        }
+    });
+    var save_btn = document.getElementById('pat-okc-save-custom-flag-btn');
+    save_btn.addEventListener('click', OKCPAT.addAsCustomFlag);
+    // Close the popup.
+    save_btn.addEventListener('click', function (e) {
+        var x = document.getElementById('pat-okc-add-custom-flag-popup');
+        x.parentNode.removeChild(x);
+    });
+};
+// Saves a new custom flag to the locally-stored custom flag set.
+OKCPAT.addAsCustomFlag = function (e) {
+    e.preventDefault();
+    var qid = document.getElementById('pat_okc_custom_flag_qid').value;
+    var els = document.querySelectorAll('#pat-okc-custom-flag-form input[type="checkbox"]');
+    flagged_answers = [];
+    for (var i = 0; i < els.length; i++) {
+        if (els[i].checked) {
+            flagged_answers.push(els[i].value);
+        }
+    }
+    if (flagged_answers.length == 1) { flagged_answers = flagged_answers.toString(); }
+    var custom_set = OKCPAT.readLocally('pat_okc_custom_flagged_qs') || {}; // Empty object by default.
+    custom_set[qid] = flagged_answers;
+    // Since this is called from the "unsafeWindow", GM_setValue won't work.
+    // @see http://wiki.greasespot.net/0.7.20080121.0%2B_compatibility
+    setTimeout(function () {
+        OKCPAT.saveLocally('pat_okc_custom_flagged_qs', custom_set);
+        var x = document.querySelector('#question_' + qid + ' p.pat-okc-btn:last-child');
+        x.parentNode.removeChild(x);
+        OKCPAT.injectCustomFlagButton(document.getElementById('question_' + qid));
+    }, 0);
+};
+OKCPAT.removeCustomFlag = function (e) {
+    e.preventDefault();
+    var qid = document.getElementById('pat_okc_custom_flag_qid').value;
+    var custom_set = OKCPAT.readLocally('pat_okc_custom_flagged_qs');
+    delete custom_set[qid];
+    setTimeout(function () {
+        OKCPAT.saveLocally('pat_okc_custom_flagged_qs', custom_set);
+        var x = document.querySelector('#question_' + qid + ' p.pat-okc-btn:last-child');
+        x.parentNode.removeChild(x);
+        OKCPAT.injectCustomFlagButton(document.getElementById('question_' + qid));
+    }, 0);
 };
 
 OKCPAT.findUsersOnPage = function () {
@@ -803,7 +1009,7 @@ OKCPAT.injectPopUp = function (html, attrs) {
         str_style += x + ':' + attrs.style[x] + ';';
     }
     div.setAttribute('style', str_style);
-    var inner_html = '<div class="container">';
+    var inner_html = '<div class="container clearfix">';
     inner_html += html;
     inner_html += '</div>';
     div.innerHTML = inner_html;
