@@ -684,13 +684,17 @@ OKCPAT.getPossibleAnswers = function (q_el) {
 OKCPAT.injectCustomFlagButton = function (q_el) {
     // Check to see if this question is already in our custom set.
     var qid = OKCPAT.getQid(q_el);
-    custom_set = OKCPAT.readLocally('pat_okc_custom_flagged_qs');
+    var builtin_qs = (OKCPAT.CONFIG.debug) ?
+        OKCPAT.CONFIG.flagged_qs_development :
+        OKCPAT.CONFIG.flagged_qs_sexual_consent;
+    var custom_set = OKCPAT.readLocally('pat_okc_custom_flagged_qs');
     if (custom_set[qid]) {
-        // If it is, inject a "remove from my red-flags" button.
         OKCPAT.injectButton(q_el, 'Edit this red-flag', {}, function (e) {
             e.preventDefault();
             OKCPAT.showEditCustomFlagPopup(q_el);
         });
+    } else if (builtin_qs[qid]) {
+        // Do nothing if this is already a built-in red flag.
     } else {
         OKCPAT.injectButton(q_el, 'Add to my red-flags', {}, function (e) {
             e.preventDefault();
