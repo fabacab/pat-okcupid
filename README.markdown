@@ -66,6 +66,8 @@ Yes. If you come across an OkCupid Match Question that you think PAT-OKC should 
 
 If you would like to suggest new Match Questions, first [create the Match Question on OkCupid](http://www.okcupid.com/questions/create), and *then* suggest it for consideration to PAT-OKC.
 
+Version 0.4 of PAT-OKC also includes a "custom flag" feature. You can tell Predator Alert Tool for OkCupid to treat any question you encounter as a red flag by clicking the "Add to my red-flags" button next to the "Suggest as 'red flag'" button. The "Add to your custom set of red-flag warning questions" pop-up will appear, and you can indicate which answer(s) concerns you. Then click "Save." You can edit your custom flag at any time by clicking the "Edit this red-flag" button, which replaces the "Add to my red-flags" button.
+
 ### Why are profiles I've never visited showing up on my "You recently visited" list?
 
 Part of the way PAT-OKC works is by "looking" at the public answers to Match Questions other users provided on their profiles. To do this, PAT-OKC needs to load those profiles. It does exactly what you do when you look at other people's answers; it loads their pages!
@@ -88,6 +90,9 @@ Each of the pages listed above also contain numerous additional links. I'd recom
 
 ## Change log
 
+* Version 0.4:
+    * [New feature: custom flag set](https://github.com/meitar/pat-okcupid/issues/9). You can now define your own set of warning questions and red-flagged answers.
+    * Fixed bug where some possible answers to Match Questions were not being suggested in the PAT-OKC suggestion form.
 * Version 0.3:
     * Add survey questions from [McWhorter's 2009 study](http://ncherm.org/documents/McWhorterVV2009.pdf) to flag questions set.
     * Fix bug where pausing the questionnaire before answering the first question resulted in unpredictable behavior.
