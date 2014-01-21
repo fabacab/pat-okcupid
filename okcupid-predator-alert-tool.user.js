@@ -18,7 +18,7 @@
  */
 // ==UserScript==
 // @name           Predator Alert Tool for OkCupid
-// @version        0.4
+// @version        0.4.1
 // @namespace      com.maybemaimed.pat.okcupid
 // @updateURL      https://userscripts.org/scripts/source/163064.user.js
 // @description    Alerts you of potential sexual predators on OkCupid based on their own answers to Match Questions patterned after Lisak and Miller's groundbreaking academic work on identifying "undetected rapists."
@@ -172,6 +172,10 @@ GM_addStyle('\
     float: left;\
     width: auto;\
     margin-right: 3px;\
+}\
+.flag_pop .btn {\
+    display: inline-block;\
+    margin-right: 5px;\
 }\
 ');
 OKCPAT.init = function () {
@@ -712,13 +716,13 @@ OKCPAT.showEditCustomFlagPopup = function (q_el) {
     var red_ans = OKCPAT.readLocally('pat_okc_custom_flagged_qs')[qid];
     if (typeof(red_ans) === 'string') { red_ans = [red_ans] };
     for (var i = 0; i < arr_ans.length; i++) {
-        html += '<label><input type="checkbox" value="' + arr_ans[i] + '" ';
+        html += '<p><label><input type="checkbox" value="' + arr_ans[i] + '" ';
         for (var z = 0; z < red_ans.length; z++) {
             if (arr_ans[i] == red_ans[z]) {
                 html += 'checked="checked"';
             }
         }
-        html += ' />' + arr_ans[i] + '</label>';
+        html += ' />' + arr_ans[i] + '</label></p>';
     }
     html += '</form>';
     html += '<p class="btn green"><a id="pat-okc-save-custom-flag-btn" href="#">Save</a></p>';
@@ -731,7 +735,8 @@ OKCPAT.showEditCustomFlagPopup = function (q_el) {
             'width' : '700px',
             'position' : 'absolute',
             'left': '30px',
-            'top': findPos(q_el)[1].toString() + 'px'
+            'top': findPos(q_el)[1].toString() + 'px',
+            'z-index': '10'
         }
     });
     var save_btn = document.getElementById('pat-okc-save-custom-flag-btn');
@@ -758,7 +763,7 @@ OKCPAT.showAddCustomFlagPopup = function (q_el) {
     html += '<input type="hidden" id="pat_okc_custom_flag_qid" name="pat_okc_custom_flag_qid" value="' + qid + '" />';
     var arr_ans = OKCPAT.getPossibleAnswers(q_el).split("\n");
     for (var i = 0; i < arr_ans.length; i++) {
-        html += '<label><input type="checkbox" value="' + arr_ans[i] + '" />' + arr_ans[i] + '</label>';
+        html += '<p><label><input type="checkbox" value="' + arr_ans[i] + '" />' + arr_ans[i] + '</label></p>';
     }
     html += '</form>';
     html += '<p class="btn green"><a id="pat-okc-save-custom-flag-btn" href="#">Save</a></p>';
@@ -770,7 +775,8 @@ OKCPAT.showAddCustomFlagPopup = function (q_el) {
             'width' : '700px',
             'position' : 'absolute',
             'left': '30px',
-            'top': findPos(q_el)[1].toString() + 'px'
+            'top': findPos(q_el)[1].toString() + 'px',
+            'z-index': '10'
         }
     });
     var save_btn = document.getElementById('pat-okc-save-custom-flag-btn');

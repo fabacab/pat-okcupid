@@ -90,6 +90,8 @@ Each of the pages listed above also contain numerous additional links. I'd recom
 
 ## Change log
 
+* Version 0.4.1:
+    * Fix bug where custom flag popup was sometimes visually obscured.
 * Version 0.4:
     * [New feature: custom flag set](https://github.com/meitar/pat-okcupid/issues/9). You can now define your own set of warning questions and red-flagged answers.
     * Fixed bug where some possible answers to Match Questions were not being suggested in the PAT-OKC suggestion form.
