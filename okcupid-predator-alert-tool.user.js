@@ -445,8 +445,8 @@ OKCPAT.processAnsweredQuestions = function (els, targetid, targetsn) {
     // for each answered question on this page,
     for (var i = 0; i < els.length; i++) {
         var qid    = OKCPAT.getQid(els[i]);
-        var qtext  = els[i].querySelector('#qtext_' + qid).childNodes[0].textContent.trim();
-        var answer = els[i].querySelector('#answer_target_' + qid).childNodes[0].textContent.trim();
+        var qtext  = els[i].querySelector('#qtext_' + qid).textContent.trim();
+        var answer = els[i].querySelector('#answer_target_' + qid).textContent.trim();
         // TODO: Ask the server if we've already got a match for question X with answer Y.
         // If we don't, send this information to the server for storage.
         arr_qs.push({'qid' : qid, 'qtext' : qtext, 'answer' : answer});
