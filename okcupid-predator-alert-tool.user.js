@@ -921,7 +921,20 @@ OKCPAT.doFirstRun = function (step) {
         var sbtn = document.getElementById('submit_btn_' + cur_qid.toString());
         if (sbtn) {
             sbtn.addEventListener('click', function () {
-                window.location = url;
+                window.location.href = url;
+                OKCPAT.injectPopUp('Great, thanks for answering! Hang on a sec while I fetch the next question.', {
+                    'id' : 'okcpat-first_run',
+                    'class' : 'flag_pop text_attached shadowbox',
+                    'style' : {
+                        'display' : 'block',
+                        'width' : '535px',
+                        'position' : 'absolute',
+                        'left': '10px',
+                        'top' : '250px',
+                        'min-height': '750px',
+                        'z-index': '1000'
+                    }
+                });
             });
             sbtn.innerHTML = sbtn.innerHTML + ' and continue';
             sbtn.setAttribute('style', 'width: auto;');
