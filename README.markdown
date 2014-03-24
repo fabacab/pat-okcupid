@@ -82,14 +82,19 @@ You can [learn more about "browsing openly" on OkCupid's privacy help page](http
 
 The following articles are important reads that offer additional background and context for this issue:
 
-* [Meet The Predators](https://yesmeansyesblog.wordpress.com/2009/11/12/meet-the-predators/)
+* [No good excuse for not building sexual assault prevention tools into every social network on the Internet](http://maybemaimed.com/2013/10/09/no-good-excuse-for-not-building-sexual-violence-prevention-tools-into-every-social-network-on-the-internet/)
 * [Tracking rape culture's social license to operate online](http://maybemaimed.com/2012/12/21/tracking-rape-cultures-social-license-to-operate-online/)
 * [Help dating websites' Rape Culture FAADE Away](http://days.maybemaimed.com/post/39785638940/last-october-i-introduced-the-fetlife-alleged)
+* [Rape culture, meet Internet culture: PAT-OKC and other online anti-rape initiatives](https://unquietpirate.wordpress.com/2013/03/30/rape-culture-meet-internet-culture-pat-okc-and-other-online-anti-rape-initiatives/)
 
 Each of the pages listed above also contain numerous additional links. I'd recommend reading them, too.
 
 ## Change log
 
+* Version 0.4.2:
+    * Update for OkCupid's new interface includes:
+        * Fixes for [visual interlacing](https://github.com/meitar/pat-okcupid/issues/16), incorrect questionnaire sequence, more.
+        * Notify users of [Predator Alert Tool for Facebook](https://apps.facebook.com/predator-alert-tool/) availability.
 * Version 0.4.1:
     * Fix bug where custom flag popup was sometimes visually obscured.
 * Version 0.4:

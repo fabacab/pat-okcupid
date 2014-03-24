@@ -18,7 +18,7 @@
  */
 // ==UserScript==
 // @name           Predator Alert Tool for OkCupid
-// @version        0.4.1
+// @version        0.4.2
 // @namespace      com.maybemaimed.pat.okcupid
 // @updateURL      https://userscripts.org/scripts/source/163064.user.js
 // @description    Alerts you of potential sexual predators on OkCupid based on their own answers to Match Questions patterned after Lisak and Miller's groundbreaking academic work on identifying "undetected rapists."
@@ -34,7 +34,7 @@
 var OKCPAT = {};
 OKCPAT.CONFIG = {
     'debug': false, // switch to true to debug.
-    'version': '0.4', // used to perform clean up, etc. during init()
+    'version': '0.4.2', // used to perform clean up, etc. during init()
     'storage_server_url': 'http://okcupid-pat.appspot.com/okcupid_pat', // Our centralized database.
     'storage_server_url_development': 'http://localhost:8080/okcupid_pat', // A dev server, for when 'debug' is true.
     'red_flag_suggestion_form_url': 'https://docs.google.com/forms/d/15zyiFLP71Qtl6eVtACjg2SIaV9ZKAv3DpcK0d_9_Qnc/viewform',
@@ -180,17 +180,23 @@ GM_addStyle('\
 ');
 OKCPAT.init = function () {
     if (OKCPAT.isUpdatedVersion()) {
+        OKCPAT.log('Updated version found.');
         // Code to run when we get updated to a new version.
         // TODO: Modularize this, eventually?
-        OKCPAT.log('Updated version found.');
+        // Update our installed version string.
+        OKCPAT.setValue('version', OKCPAT.CONFIG.version);
+        // If paused or already completed, start first run from beginning with "rerun" param.
         if (OKCPAT.isFirstRunPaused() || OKCPAT.getValue('completed_first_run_questionnaire')) {
             window.location =
                 window.location.protocol + '//' + window.location.host
                 + '/questions?rqid=' + OKCPAT.getQuestionIdOfFirstRunStep(0) +
                 '&pat_okc_rerun_first_run&pat_okc_first_run_step=1&pat_okc_first_run_unpause';
+        } else {
+            // In all other cases, just show a pop-up.
+            var html = OKCPAT.getUpdatedVersionHtml();
+            html += '<div class="buttons"><p class="btn small flag_button green" style="width: auto;"><a style="padding: 0 20px;" href="#" onclick="var x = document.getElementById(\'okcpat-first_run\'); x.parentNode.removeChild(x); return false;">Ok</a></p></div>';
+            OKCPAT.injectPopUp(html);
         }
-        // Update our installed version string.
-        OKCPAT.setValue('version', OKCPAT.CONFIG.version);
         return; // Stop everything, let the reload happen.
     }
     if (OKCPAT.isFirstRun()) {
@@ -862,6 +868,14 @@ OKCPAT.injectResumeFirstRunLink = function () {
     el.firstElementChild.appendChild(li);
 };
 
+OKCPAT.getUpdatedVersionHtml = function () {
+    var html = '<h1>The <a href="https://github.com/meitar/pat-okcupid/#readme">Predator Alert Tool for OkCupid</a> has been updated.</h1>';
+    html += '<p>The running version is ' + OKCPAT.CONFIG.version + '. (<a href="https://github.com/meitar/pat-okcupid/#change-log" title="Read about what\'s new in this version.">Release notes</a>.)</p>';
+    html += '<p><strong>Did you know?</strong></p>';
+    html += '<ul><li>Predator Alert Tool for OkCupid is one in <strong>a larger <a href="http://maybemaimed.com/2013/10/09/no-good-excuse-for-not-building-sexual-violence-prevention-tools-into-every-social-network-on-the-internet/">suite of Predator Alert Tools</a> available for other sites</strong>, including <a href="https://apps.facebook.com/predator-alert-tool/" title="Log in to Facebook to start using Predator Alert Tool for Facebook.">for Facebook</a>.</li></ul>';
+    return html;
+};
+
 // Dispatcher for the "first run" sequence.
 OKCPAT.doFirstRun = function (step) {
     var step = step || 0;
@@ -873,8 +887,8 @@ OKCPAT.doFirstRun = function (step) {
         // If we're re-running this questionnaire because of updates, let the user know.
         if (window.location.search.match(/pat_okc_rerun_first_run/)) {
             // Prepare pop-up HTML.
-            var html = '<h1>The <a href="https://github.com/meitar/pat-okcupid/#readme">Predator Alert Tool for OkCupid</a> has been updated!</h1>';
-            html += '<p>You downloaded an update to the Predator Alert Tool for OkCupid (PAT-OKC). As part of this update, new Match Questions were added. Please take a moment to review the PAT-OKC questionnaire to make sure you answered all the required questions.</p>';
+            var html = OKCPAT.getUpdatedVersionHtml();
+            html += '<p>Please take a moment to review the PAT-OKC questionnaire to make sure you answered all the required questions.</p>';
             html += '<p>Answering the PAT-OKC questionnaire makes sure your browser has all the information it needs to flag the profiles of users who have answered these questions in a concerning way.</p>';
             html += '<div class="buttons"><p class="btn small flag_button blue" style="width: auto;"><a style="padding: 0 20px;" href="#" onclick="var x = document.getElementById(\'okcpat-first_run\'); x.parentNode.removeChild(x); return false;">Ok</a></p></div>';
             OKCPAT.injectPopUp(html);
@@ -1014,8 +1028,8 @@ OKCPAT.injectPopUp = function (html, attrs) {
 OKCPAT.startFirstRun = function () {
     // Prepare pop-up HTML.
     var html = '<h1>Thank you for installing the <a href="https://github.com/meitar/pat-okcupid/#readme">Predator Alert Tool for OkCupid</a>!</h1>';
-    html += '<p>The Predator Alert Tool for OkCupid (PAT-OKC) is <strong>an early-warning system</strong> that highlights red flags which may be an indicator of predatory or abusive behavior.</p>';
-    html += '<p>However, it <strong>is no substitute for basic <a href="http://maymay.net/blog/2013/02/20/howto-use-tor-for-all-network-traffic-by-default-on-mac-os-x/#step-6">Internet self-defense</a></strong>. PAT-OKC can only give you information to help you make better decisions; the decisions you make are still up to you. Always meet people you don\'t know from OkCupid in a public place, and consider <a href="https://yesmeansyesblog.wordpress.com/2010/04/26/what-is-a-safecall/">setting up a safe call</a> with one of your friends.</p>';
+    html += '<p>The Predator Alert Tool for OkCupid (PAT-OKC) is <strong>an early warning system</strong> that highlights red flags which may be an indicator of predatory or abusive behavior on OkCupid. It is part of the larger <a href="https://github.com/meitar/pat-facebook/wiki/Frequently-Asked-Questions">Predator Alert Tool suite</a>, so if you use Facebook, consider using the <a href="https://apps.facebook.com/predator-alert-tool/">Predator Alert Tool for Facebook</a>, too.</p>';
+    html += '<p><strong>No software is a substitute for basic <a href="http://maymay.net/blog/2013/02/20/howto-use-tor-for-all-network-traffic-by-default-on-mac-os-x/#step-6">Internet self-defense</a>.</strong> Predator Alert Tools can only give you information to help you make better decisions; the decisions you make are still up to you. Always meet people you don\'t know from OkCupid in a public place, and consider <a href="https://yesmeansyesblog.wordpress.com/2010/04/26/what-is-a-safecall/">setting up a safe call</a> with one of your friends.</p>';
     html += "<p>As this is the first time you've installed the Predator Alert Tool for OkCupid (PAT-OKC), <strong>you'll be asked to answer a few OkCupid Match Questions</strong> that will help ensure your Web browser has the information it needs to alert you of a potentially dangerous profile. Ready? Set?</p>";
     var next_qid = OKCPAT.getQuestionIdOfFirstRunStep(0); // This is always the first step.
     html += '<div class="buttons"><p class="btn small flag_button green"><a href="/questions?rqid=' + next_qid + '&pat_okc_first_run_step=1">Go!</a></p></div>';
