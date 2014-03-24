@@ -905,93 +905,65 @@ OKCPAT.doFirstRun = function (step) {
 
         // Hijack the "Submit" button, if it's there.
         var sbtn = document.getElementById('submit_btn_' + cur_qid.toString());
-        if (sbtn) { // this is actually a <p> element in OkCupid's code.
-            // Replace their JS. For some reason, this won't work with event handlers. :(
-            sbtn.firstElementChild.setAttribute('onclick',
-                'BigDig.submitAnswer(' + cur_qid.toString() + '); '
-                + 'setTimeout(function() {' + // Set a timer to redirect.
-                    'window.location = \'' + url + '\'' // to the next step
-                + '}, 2000);' // in 2 seconds.
-                + 'return false;'
-            );
-            // Obscure defaut OkCupid question animation while we do a reload.
-            // @see https://hacks.mozilla.org/2012/05/dom-mutationobserver-reacting-to-dom-changes-without-killing-browser-performance/
-            var MutationObserver = uw.MutationObserver || uw.WebKitMutationObserver;
-            var observer = new MutationObserver(function (mutations) {
-                mutations.forEach(function (mutation) {
-                    if (mutation.oldValue.match(/active/) && (null === mutation.target.getAttribute('class').match(/active/))) {
-                        OKCPAT.injectPopUp('Great, thanks for answering! Hang on a sec while I fetch the next question.', {
-                            'id' : 'okcpat-first_run',
-                            'class' : 'flag_pop text_attached shadowbox',
-                            'style' : {
-                                'display' : 'block',
-                                'width' : '535px',
-                                'position' : 'absolute',
-                                'left': '10px',
-                                'top' : '250px',
-                                'min-height': '750px',
-                            }
-                        });
-                    }
-                });
+        if (sbtn) {
+            sbtn.addEventListener('click', function () {
+                window.location = url;
             });
-            observer.observe(sbtn, {
-                'attributes': true,
-                'attributeOldValue': true
-
-            });
+            sbtn.innerHTML = sbtn.innerHTML + ' and continue';
+            sbtn.setAttribute('style', 'width: auto;');
         }
 
         // If there's a next "red flag" question,
         if (next_qid) {
-            // Hijack the "Next question" button, if it's there.
-            var xpath = document.evaluate(
-                '//*[contains(@class, "notice")]//a[text()="Next question"]',
-                document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null
-            );
-            var nxt = (xpath.singleNodeValue) ? xpath.singleNodeValue : false;
+            // Hijack the "Skip question" button, if it's there.
+            var nxt = document.querySelector('.skip_btn');
             if (nxt) {
-                nxt.removeAttribute('onclick'); // Erase their JS
                 // Force the button to link to the next action in our sequence.
                 nxt.setAttribute('href',
                     '/questions?rqid=' + encodeURIComponent(next_qid)
                     + '&pat_okc_first_run_step=' + encodeURIComponent(next_step.toString())
                     + '&pat_okc_first_run_unpause'
                 );
+                // And remove OkCupid's event listeners.
+                var new_node = nxt.cloneNode(true);
+                nxt.parentNode.replaceChild(new_node, nxt);
             }
         }
 
         // Customize the "Notice" text, later.
         // TODO: Clean this up when we hit the "staff robot" (at 25 questions or so).
+        // TODO: Does OkCupid even provide these notices anymore? If not, let's just remove this.
         var el = document.querySelector('.notice') || document.getElementById('guide_text');
-        var nx = el.getAttribute('class').match(/green|pink|sr_message/);
-        if (!nx) {
-            // Neither "green" or "pink" (or the "staff robot") means we've answered but can re-answer.
-            var txt = 'Looks like you already answered this important PAT-OKC question! Rock on, rockstar!';
-            el.querySelector('p:not(.btn)').setAttribute('style', 'margin-right: 160px;');
-            if (!next_qid) {
-                // There's no next_qid, meaning this is the last question.
-                // so the "Next question" button should say "Congrats, you're done!"
-                txt += '<p class="btn small green" style="width: 160px;"><a href="' + url + '">Start using PAT-OKC!</a></p>';
+        if (el) {
+            var nx = el.getAttribute('class').match(/green|pink|sr_message/);
+            if (!nx) {
+                // Neither "green" or "pink" (or the "staff robot") means we've answered but can re-answer.
+                var txt = 'Looks like you already answered this important PAT-OKC question! Rock on, rockstar!';
+                el.querySelector('p:not(.btn)').setAttribute('style', 'margin-right: 160px;');
+                if (!next_qid) {
+                    // There's no next_qid, meaning this is the last question.
+                    // so the "Next question" button should say "Congrats, you're done!"
+                    txt += '<p class="btn small green" style="width: 160px;"><a href="' + url + '">Start using PAT-OKC!</a></p>';
+                }
+            } else {
+                switch (nx[0]) {
+                    case 'green':
+                    case 'sr_message':
+                        var txt = "Yay! You're making the Internet safer with every question you answer!";
+                        break;
+                    case 'pink':
+                        var txt = 'Woah there, you recently answered this question already!';
+                        el.querySelector('p:not(.btn)').setAttribute('style', 'margin-right: 140px;');
+                        // If we can't re-answer AND this is the last question,
+                        if (!next_qid) {
+                            // offer a "congrats, you're done!" link.
+                            txt += '<p class="btn small green" style="width: 160px;"><a href="' + url + '">Start using PAT-OKC!</a></p>';
+                        }
+                        break;
+                }
             }
-        } else {
-            switch (nx[0]) {
-                case 'green':
-                case 'sr_message':
-                    var txt = "Yay! You're making the Internet safer with every question you answer!";
-                    break;
-                case 'pink':
-                    var txt = 'Woah there, you recently answered this question already!';
-                    el.querySelector('p:not(.btn)').setAttribute('style', 'margin-right: 140px;');
-                    // If we can't re-answer AND this is the last question,
-                    if (!next_qid) {
-                        // offer a "congrats, you're done!" link.
-                        txt += '<p class="btn small green" style="width: 160px;"><a href="' + url + '">Start using PAT-OKC!</a></p>';
-                    }
-                    break;
-            }
+            el.querySelector('p:not(.btn)').innerHTML = txt + '<br /><br />' + progress_txt;
         }
-        el.querySelector('p:not(.btn)').innerHTML = txt + '<br /><br />' + progress_txt;
     } else {
         OKCPAT.finishFirstRun();
     }
@@ -1007,7 +979,8 @@ OKCPAT.injectPopUp = function (html, attrs) {
             'display' : 'block',
             'width' : '700px',
             'position' : 'absolute',
-            'left': '30px'
+            'left': '30px',
+            'z-index': '1000'
         }
     };
     // Inject a pop-up.
