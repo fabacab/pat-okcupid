@@ -18,7 +18,7 @@
  */
 // ==UserScript==
 // @name           Predator Alert Tool for OkCupid
-// @version        0.4.2
+// @version        0.4.3
 // @namespace      com.maybemaimed.pat.okcupid
 // @updateURL      https://userscripts.org/scripts/source/163064.user.js
 // @description    Alerts you of potential sexual predators on OkCupid based on their own answers to Match Questions patterned after Lisak and Miller's groundbreaking academic work on identifying "undetected rapists."
@@ -34,7 +34,7 @@
 var OKCPAT = {};
 OKCPAT.CONFIG = {
     'debug': false, // switch to true to debug.
-    'version': '0.4.2', // used to perform clean up, etc. during init()
+    'version': '0.4.3', // used to perform clean up, etc. during init()
     'storage_server_url': 'http://okcupid-pat.appspot.com/okcupid_pat', // Our centralized database.
     'storage_server_url_development': 'http://localhost:8080/okcupid_pat', // A dev server, for when 'debug' is true.
     'red_flag_suggestion_form_url': 'https://docs.google.com/forms/d/15zyiFLP71Qtl6eVtACjg2SIaV9ZKAv3DpcK0d_9_Qnc/viewform',
@@ -350,15 +350,15 @@ OKCPAT.getMyScreenname = function () {
 OKCPAT.getTargetUserId = function (html) {
     if (!html) {
         OKCPAT.log('No HTML source code string passed, using active script values.');
-        return uw.user_info.userid;
+        return uw.Profile.userid
     } else {
         OKCPAT.log('An HTML source code string was passed, parsing string values.');
-        var m = html.match(/"userid"\s*:\s*"(\d+)"/);
+        var m = html.match(/Profile\.initialize.*"userid"\s*:\s*"(\d+)"/);
         return (m) ? m[1] : false ;
     }
 };
 OKCPAT.getTargetScreenname = function () {
-    return uw.user_info.screenname;
+    return uw.Profile.screenname
 };
 OKCPAT.isTargetMe = function () {
     return (this.getMyUserId() === this.getTargetUserId()) ? true : false;

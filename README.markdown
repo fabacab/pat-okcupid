@@ -91,6 +91,8 @@ Each of the pages listed above also contain numerous additional links. I'd recom
 
 ## Change log
 
+* Version 0.4.3:
+    * Update for OkCupid's new internal JavaScript, fixes [bug causing failure to display "OkCupid Predator Alert Warning" profile section](https://github.com/meitar/pat-okcupid/issues/17).
 * Version 0.4.2:
     * Update for OkCupid's new interface includes:
         * Fixes for [visual interlacing](https://github.com/meitar/pat-okcupid/issues/16), incorrect questionnaire sequence, more.
