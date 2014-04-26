@@ -1,5 +1,4 @@
 /**
- *
  * This is a Greasemonkey script and must be run using a Greasemonkey-compatible browser.
  *
  * Predator Alert Tool for OkCupid
@@ -29,6 +28,7 @@
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_deleteValue
+// @grant          GM_openInTab
 // ==/UserScript==
 
 var OKCPAT = {};
@@ -176,6 +176,15 @@ GM_addStyle('\
 .flag_pop .btn {\
     display: inline-block;\
     margin-right: 5px;\
+}\
+#pat-okc-creepshield-profile-results ul {\
+    padding: 2em;\
+    list-style: disc;\
+}\
+#pat-okc-creepshield-profile-results img {\
+    position: absolute;\
+    top: 10px;\
+    right: 20px;\
 }\
 ');
 OKCPAT.init = function () {
@@ -507,6 +516,127 @@ OKCPAT.isConcerningAnswer = function (answer, flagged_answers) {
     return false;
 };
 
+OKCPAT.creepShield = {};
+OKCPAT.creepShield.checkPhotoUrl = function (url) {
+    var _formdata = new FormData();
+    _formdata.append('linked_image', url);
+    _formdata.append('submit_linked_image', 'Search'); // Mimic hitting the "Search" button.
+    GM_xmlhttpRequest({
+        'method': 'POST',
+        'url': 'http://www.creepshield.com/search',
+        'data': _formdata,
+        'onload': function (response) {
+            var parser = new DOMParser();
+            var doc = parser.parseFromString(response.responseText, 'text/html');
+            // If our search was successful,
+            if (doc.querySelector('.search-details')) {
+                // Parse the CreepShield results and display on FetLife.
+                var creep_data = OKCPAT.creepShield.parseResults(doc);
+                OKCPAT.creepShield.display(creep_data);
+            } else {
+                OKCPAT.log('An error occurred searching CreepShield.com.');
+                if (doc.getElementById('messages')) {
+                    OKCPAT.creepShield.displayError(doc.getElementById('messages').textContent);
+                }
+            }
+        }
+    });
+};
+OKCPAT.creepShield.parseResults = function (doc) {
+    var ret = {
+        'searched_url' : doc.querySelector('.searched-image').getAttribute('src'),
+        'matches_count': doc.querySelectorAll('.person').length,
+        'highest_match': doc.querySelector('.match-percentage p:nth-child(2)').textContent.match(/\d+%/),
+        'highest_photo': doc.querySelector('.person-images-inner img'),
+        'person_detail': doc.querySelector('.person-name').textContent
+    };
+    return ret;
+};
+OKCPAT.creepShield.getDisclaimerHtml = function () {
+    return '<p>This feature is powered by the facial recognition service at <a href="http://creepshield.com/">CreepShield.com</a>. The registered sex offender database is <em>not</em> always a reliable source of information. <a href="https://www.eff.org/deeplinks/2011/04/sexual-predators-please-check-here-match-com-s">Learn more</a>.</p>';
+};
+OKCPAT.creepShield.display = function (creep_data) {
+    OKCPAT.log('Displaying data from CreepShield....');
+    // Insert an "RSO facial match" percent.
+    var percent_match_el = document.createElement('div');
+    percent_match_el.setAttribute('class', 'percentbox');
+    var html = '<a href="javascript:document.getElementById(\'pat-okc-creepshield-profile-results\').style.display = \'block\';void(0);">';
+    html += '<span class="percent">' + creep_data.highest_match + '</span>';
+    html += '<span><abbr title="Registered Sex Offender">RSO</abbr> facial match</span>';
+    html += '</a>';
+    percent_match_el.innerHTML = html;
+    document.getElementById('percentages').appendChild(percent_match_el);
+
+    // Inject an invisible element to show when they click on the percent.
+    var html = '<h1>Possible Registered Sex Offender matches:</h1>';
+    html += '<ul>';
+    html += '<li>Highest facial match: ' + creep_data.highest_match + '</li>'
+    html += '<li>Most likely offender: <img src="' + creep_data.highest_photo.getAttribute('src') + '" alt="" />' + creep_data.person_detail + '</li>';
+    html += '<li>Total possible matches: ' + creep_data.matches_count + '</li>';
+    html += '</ul>';
+    html += '<form method="POST" action="http://www.creepshield.com/search">';
+    html += '<input type="hidden" name="linked_image" value="' + creep_data.searched_url + '" />';
+    html += '<p>Search for criminal histories and other possible offenders: ';
+    html += '<input type="submit" name="submit_linked_image" value="Search" />';
+    html += '</p>';
+    html += '</form>';
+    html += OKCPAT.creepShield.getDisclaimerHtml();
+    html += '<div class="buttons"><p class="btn small flag_button blue" style="width: auto;"><a style="padding: 0 20px;" href="#" onclick="var x = document.getElementById(\'pat-okc-creepshield-profile-results\'); x.parentNode.removeChild(x); return false;">OK</a></p></div>';
+    OKCPAT.injectPopUp(html, {
+        'id' : 'pat-okc-creepshield-profile-results',
+        'class' : 'flag_pop shadowbox',
+        'style' : {
+            'display' : 'none',
+            'width' : '700px',
+            'position' : 'absolute',
+            'left': '30px',
+            'z-index': '1000'
+        }
+    });
+};
+OKCPAT.creepShield.displayError = function (msg) {
+    OKCPAT.log('Got error from CreepShield: ' + msg);
+    var cswin = GM_openInTab('http://www.creepshield.com/search');
+    cswin.blur(); // "popunder"
+
+    // Insert an error notice
+    var percent_match_el = document.createElement('div');
+    percent_match_el.setAttribute('class', 'percentbox');
+    var html = '<a href="javascript:document.getElementById(\'pat-okc-creepshield-profile-results\').style.display = \'block\';void(0);">';
+    html += '<span class="percent" style="color:red;font-weight:bold;">CreepShield Error</span>';
+    html += '<span><abbr title="Registered Sex Offender">RSO</abbr> facial match</span>';
+    html += '</a>';
+    percent_match_el.innerHTML = html;
+    document.getElementById('percentages').appendChild(percent_match_el);
+
+    var html = '<h1>Possible Registered Sex Offender matches:</h1>';
+    html += '<p>CreepShield returned an error:</p>';
+    html += '<blockquote><p>' + msg + '</p></blockquote>';
+    html += '<p>If you are being told you need to login before you can do more searches, simply <a href="javascript:window.location.reload();void(0);">reload this page</a> to try again.</p>';
+    html += OKCPAT.creepShield.getDisclaimerHtml();
+    html += '<div class="buttons"><p class="btn small flag_button blue" style="width: auto;"><a style="padding: 0 20px;" href="#" onclick="var x = document.getElementById(\'pat-okc-creepshield-profile-results\'); x.parentNode.removeChild(x); return false;">OK</a></p></div>';
+    OKCPAT.injectPopUp(html, {
+        'id' : 'pat-okc-creepshield-profile-results',
+        'class' : 'flag_pop shadowbox',
+        'style' : {
+            'display' : 'none',
+            'width' : '700px',
+            'position' : 'absolute',
+            'left': '30px',
+            'z-index': '1000'
+        }
+    });
+};
+
+OKCPAT.clearCookies = function () {
+    var cookie_list = document.cookie.split(';');
+    for (var i = 0; i < cookie_list.length; i++) {
+        var cookie_name = cookie_list[i].replace(/\s*(\w+)=.+$/, "$1");
+        // To delete a cookie, set its expiration date to a past value.
+        document.cookie = cookie_name + '=;expires=Thu, 01-Jan-1970 00:00:01 GMT;';
+    }
+};
+
 // This is the main() function, executed on page load.
 OKCPAT.main = function () {
     var myid = OKCPAT.getMyUserId();
@@ -560,8 +690,16 @@ OKCPAT.main = function () {
             }
         }
     }
-    // If we're on a flagged user's profile page,
     var m = window.location.pathname.match(/^\/profile\/([^\/]+)/);
+    // If we're on any profile page,
+    if (m) {
+        // scrape their userpic and send it to CreepShield for testing
+        var userpic_el = document.querySelector('#thumb0 img');
+        if (userpic_el) {
+            OKCPAT.creepShield.checkPhotoUrl(userpic_el.getAttribute('src'));
+        }
+    }
+    // If we're on a flagged user's profile page,
     if (m && (m[1] in red_flags)) {
         // Grab the target IDs here.
         var targetid = OKCPAT.getTargetUserId();
