@@ -10,6 +10,19 @@ Tragically, *a statistically significant portion of respondents answered in the 
 
 The Predator Alert Tool for OkCupid automates this process and issues warnings if its heuristics find a concerning match. This early warning system can help OkCupid users make better informed choices about what measures they feel they need to take to remain safe while using the service.
 
+Additionally:
+
+* While browsing OkCupid, the Predator Alert Tool will visually highlight any user profile you encounter that has answered these questions in a concerning way. Click through to the user's profile for a complete listing of concerning Match Question answers.
+* Each time you load a user's OkCupid profile, that user's profile picture is scanned against the United States's Sex Offender Registry using the facial recognition service provided by CreepShield.com, and the an "RSO facial match" percentage is shown to you.
+
+![Screenshot of OkCupid profile with "RSO facial match" percentage added.](https://i.imgur.com/qCmwMly.png)
+
+Click on the RSO facial match percentage to a get more information in an OkCupid pop-up.
+
+![Screenshot of Predator Alert Tool for OkCupid displaying CreepShield results after clicking on "RSO facial match" percentage on a user's OkCupid profile.](https://i.imgur.com/aoiCZKk.png)
+
+Click the "Search" button in the pop up to get the full search results from CreepShield.com.
+
 ## System requirements
 
 The following software must be installed on your system before installing the Predator Alert Tool for OkCupid user script.
@@ -91,6 +104,8 @@ Each of the pages listed above also contain numerous additional links. I'd recom
 
 ## Change log
 
+* Version 0.5:
+    * Integration with CreepShield.com now offers automatic facial recognition scans of OkCupid user profile pictures against the United States national Sex Offender Registry.
 * Version 0.4.3:
     * Update for OkCupid's new internal JavaScript, fixes [bug causing failure to display "OkCupid Predator Alert Warning" profile section](https://github.com/meitar/pat-okcupid/issues/17).
 * Version 0.4.2:
