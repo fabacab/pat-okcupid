@@ -104,6 +104,10 @@ Each of the pages listed above also contain numerous additional links. I'd recom
 
 ## Change log
 
+* Version 0.5.1:
+    * Bugfix: CreepShield integration now works with Google Chrome as well as Mozilla Firefox.
+    * Bugfix: RSO facial match pop-up can be viewed more than once without reloading the profile page.
+    * Bugfix: `.webp` profile pictures returned by OkCupid are now translated to `.jpg`, which CreepShield expects, resulting in fewer "CreepShield Error" responses and more successful searches.
 * Version 0.5:
     * Integration with CreepShield.com now offers automatic facial recognition scans of OkCupid user profile pictures against the United States national Sex Offender Registry.
 * Version 0.4.3:
