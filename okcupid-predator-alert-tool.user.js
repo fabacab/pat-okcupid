@@ -614,7 +614,9 @@ OKCPAT.creepShield.display = function (creep_data) {
 OKCPAT.creepShield.displayError = function (msg) {
     OKCPAT.log('Got error from CreepShield: ' + msg);
     var cswin = GM_openInTab('http://www.creepshield.com/search');
-    cswin.blur(); // "popunder"
+    if (cswin.blur) {
+        cswin.blur(); // "popunder"
+    }
 
     // Insert an error notice
     var percent_match_el = document.createElement('div');
