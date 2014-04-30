@@ -518,13 +518,30 @@ OKCPAT.isConcerningAnswer = function (answer, flagged_answers) {
 
 OKCPAT.creepShield = {};
 OKCPAT.creepShield.checkPhotoUrl = function (url) {
-    var _formdata = new FormData();
-    _formdata.append('linked_image', url);
-    _formdata.append('submit_linked_image', 'Search'); // Mimic hitting the "Search" button.
+    // For Chrome, we need to create the multipart request manually because
+    // extensions can't decode FormData objects due to its isolated worlds.
+    // See http://code.google.com/p/tampermonkey/issues/detail?id=183
+    var multipart_boundary = "---xxx111222333444555666777888999";
+    var multipart_data = '--' + multipart_boundary + "\n";
+    multipart_data += 'Content-Disposition: form-data; name="linked_image"';
+    multipart_data += "\n\n";
+    multipart_data += url;
+    multipart_data += "\n";
+    // Mimic hitting the "Search" button.
+    multipart_data += '--' + multipart_boundary + "\n";
+    multipart_data += 'Content-Disposition: form-data; name="submit_linked_image"';
+    multipart_data += "\n\n";
+    multipart_data += 'Search';
+    multipart_data += "\n";
+    multipart_data += '--' + multipart_boundary + '--'; // end
+
     GM_xmlhttpRequest({
         'method': 'POST',
         'url': 'http://www.creepshield.com/search',
-        'data': _formdata,
+        'headers': {
+            'Content-Type': 'multipart/form-data; boundary=' + multipart_boundary
+        },
+        'data': multipart_data,
         'onload': function (response) {
             var parser = new DOMParser();
             var doc = parser.parseFromString(response.responseText, 'text/html');
