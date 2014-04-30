@@ -715,7 +715,8 @@ OKCPAT.main = function () {
         // scrape their userpic and send it to CreepShield for testing
         var userpic_el = document.querySelector('#thumb0 img');
         if (userpic_el) {
-            OKCPAT.creepShield.checkPhotoUrl(userpic_el.getAttribute('src'));
+            // OkCupid sometimes returns .webp images, but will also return a .jpg of the same.
+            OKCPAT.creepShield.checkPhotoUrl(userpic_el.getAttribute('src').replace(/\.webp.*$/, '.jpg'));
         }
     }
     // If we're on a flagged user's profile page,
