@@ -598,7 +598,7 @@ OKCPAT.creepShield.display = function (creep_data) {
     html += '</p>';
     html += '</form>';
     html += OKCPAT.creepShield.getDisclaimerHtml();
-    html += '<div class="buttons"><p class="btn small flag_button blue" style="width: auto;"><a style="padding: 0 20px;" href="#" onclick="var x = document.getElementById(\'pat-okc-creepshield-profile-results\'); x.parentNode.removeChild(x); return false;">OK</a></p></div>';
+    html += '<div class="buttons"><p class="btn small flag_button blue" style="width: auto;"><a style="padding: 0 20px;" href="#" onclick="document.getElementById(\'pat-okc-creepshield-profile-results\').style.display = \'none\'; return false;">OK</a></p></div>';
     OKCPAT.injectPopUp(html, {
         'id' : 'pat-okc-creepshield-profile-results',
         'class' : 'flag_pop shadowbox',
