@@ -104,6 +104,8 @@ Each of the pages listed above also contain numerous additional links. I'd recom
 
 ## Change log
 
+* Version 0.5.2:
+    * Enhancement: Only open new tabs for CreepShield.com when required by the specific error message.
 * Version 0.5.1:
     * Bugfix: CreepShield integration now works with Google Chrome as well as Mozilla Firefox.
     * Bugfix: RSO facial match pop-up can be viewed more than once without reloading the profile page.

@@ -17,7 +17,7 @@
  */
 // ==UserScript==
 // @name           Predator Alert Tool for OkCupid
-// @version        0.5.1
+// @version        0.5.2
 // @namespace      com.maybemaimed.pat.okcupid
 // @updateURL      https://userscripts.org/scripts/source/163064.user.js
 // @description    Alerts you of potential sexual predators on OkCupid based on their own answers to Match Questions patterned after Lisak and Miller's groundbreaking academic work on identifying "undetected rapists."
@@ -34,7 +34,7 @@
 var OKCPAT = {};
 OKCPAT.CONFIG = {
     'debug': false, // switch to true to debug.
-    'version': '0.5.1', // used to perform clean up, etc. during init()
+    'version': '0.5.2', // used to perform clean up, etc. during init()
     'storage_server_url': 'http://okcupid-pat.appspot.com/okcupid_pat', // Our centralized database.
     'storage_server_url_development': 'http://localhost:8080/okcupid_pat', // A dev server, for when 'debug' is true.
     'red_flag_suggestion_form_url': 'https://docs.google.com/forms/d/15zyiFLP71Qtl6eVtACjg2SIaV9ZKAv3DpcK0d_9_Qnc/viewform',
@@ -613,11 +613,6 @@ OKCPAT.creepShield.display = function (creep_data) {
 };
 OKCPAT.creepShield.displayError = function (msg) {
     OKCPAT.log('Got error from CreepShield: ' + msg);
-    var cswin = GM_openInTab('http://www.creepshield.com/search');
-    if (cswin.blur) {
-        cswin.blur(); // "popunder"
-    }
-
     // Insert an error notice
     var percent_match_el = document.createElement('div');
     percent_match_el.setAttribute('class', 'percentbox');
@@ -645,6 +640,10 @@ OKCPAT.creepShield.displayError = function (msg) {
             'z-index': '1000'
         }
     });
+    // If free search limit was hit, go to CreepShield.com to flush it out.
+    if (msg.match(/You cannot perform any more searches/i)) {
+        GM_openInTab('http://www.creepshield.com/search');
+    }
 };
 
 OKCPAT.clearCookies = function () {
