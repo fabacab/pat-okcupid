@@ -104,6 +104,10 @@ Each of the pages listed above also contain numerous additional links. I'd recom
 
 ## Change log
 
+* Version 0.5.3:
+    * Questionnaire: To help protect users against abusive sadomasochists, BDSM'ers, and sexual dominants, Predator Alert Tool for OkCupid now includes questions about rolequeerness in its default set of red-flags.
+    * Stability: Auto-update switched to GitHub from now defunct Userscripts.org.
+    * Bugfix: Fix bug in auto-update detection routine that failed to notice patchlevel updates.
 * Version 0.5.2:
     * Enhancement: Only open new tabs for CreepShield.com when required by the specific error message.
 * Version 0.5.1:

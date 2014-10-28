@@ -1,4 +1,4 @@
-/**
+﻿/**
  * This is a Greasemonkey script and must be run using a Greasemonkey-compatible browser.
  *
  * Predator Alert Tool for OkCupid
@@ -17,9 +17,9 @@
  */
 // ==UserScript==
 // @name           Predator Alert Tool for OkCupid
-// @version        0.5.2
+// @version        0.5.3
 // @namespace      com.maybemaimed.pat.okcupid
-// @updateURL      https://userscripts.org/scripts/source/163064.user.js
+// @updateURL      https://github.com/meitar/pat-okcupid/raw/master/okcupid-predator-alert-tool.user.js
 // @description    Alerts you of potential sexual predators on OkCupid based on their own answers to Match Questions patterned after Lisak and Miller's groundbreaking academic work on identifying "undetected rapists."
 // @include        http://www.okcupid.com/*
 // @grant          GM_log
@@ -34,7 +34,7 @@
 var OKCPAT = {};
 OKCPAT.CONFIG = {
     'debug': false, // switch to true to debug.
-    'version': '0.5.2', // used to perform clean up, etc. during init()
+    'version': '0.5.3', // used to perform clean up, etc. during init()
     'storage_server_url': 'http://okcupid-pat.appspot.com/okcupid_pat', // Our centralized database.
     'storage_server_url_development': 'http://localhost:8080/okcupid_pat', // A dev server, for when 'debug' is true.
     'red_flag_suggestion_form_url': 'https://docs.google.com/forms/d/15zyiFLP71Qtl6eVtACjg2SIaV9ZKAv3DpcK0d_9_Qnc/viewform',
@@ -107,7 +107,13 @@ OKCPAT.CONFIG = {
             'Yes, I use physical force whenever I want.',
             'Yes, but only playfully or in jest.'
         ],
-        48947 : 'Yes.' // Is intoxication ever an acceptable excuse for acting stupid?
+        48947 : 'Yes.', // Is intoxication ever an acceptable excuse for acting stupid?
+        // Here are the rolequeer specific questions warning about abusive Dominants
+        461985: '...like a bad joke.', // Rolequeer play sounds...
+        461987: [ // My favorite kinky power dynamic is:
+            'D/s: Dominant/submissive',
+            'D/D: Dominant/Dominant'
+        ]
     },
 //    // TODO: Support multiple lists of questions?
 //    'flagged_qs_violence': {
@@ -234,10 +240,13 @@ OKCPAT.isUpdatedVersion = function () {
 OKCPAT.compareVersions = function (a, b) {
     var v1 = a.split('.');
     var v2 = b.split('.');
-    for (var i = 0; i < Math.min(v1.length, v2.length); i++) {
+    for (var i = 0; i < Math.max(v1.length, v2.length); i++) {
         var res = v1[i] - v2[i];
-        if (res != 0) {
-            return res;
+        if (Number.isNaN(res)) {
+            // so that comparisons like 0.5 with 0.5.3 result in an update notice
+            return 1;
+        } else if (res != 0) {
+            return res; // for normal comparisons
         }
     }
     return 0;
