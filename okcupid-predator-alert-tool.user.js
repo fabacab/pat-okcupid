@@ -3,8 +3,6 @@
  *
  * Predator Alert Tool for OkCupid
  *
- * Written in 2013 by Meitar Moscovitz <meitar@maymay.net>
- *
  * To the extent possible under law, the author(s) have dedicated all copyright
  * and related and neighboring rights to this software to the public domain
  * worldwide. This software is distributed without any warranty.
@@ -21,7 +19,7 @@
 // @namespace      com.maybemaimed.pat.okcupid
 // @updateURL      https://github.com/meitar/pat-okcupid/raw/master/okcupid-predator-alert-tool.user.js
 // @description    Alerts you of potential sexual predators on OkCupid based on their own answers to Match Questions patterned after Lisak and Miller's groundbreaking academic work on identifying "undetected rapists."
-// @include        http://www.okcupid.com/*
+// @include        https://www.okcupid.com/*
 // @grant          GM_log
 // @grant          GM_xmlhttpRequest
 // @grant          GM_addStyle
