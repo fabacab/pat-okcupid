@@ -37,15 +37,15 @@ If you use the [Google Chrome](https://chrome.google.com/) web browser (version 
 
 ## Installing
 
-To install the Predator Alert Tool for OkCupid, go to [http://maybemaimed.com/playground/predator-alert-tool-for-okcupid/](http://maybemaimed.com/playground/predator-alert-tool-for-okcupid/) and click "[Download and install](https://userscripts.org/scripts/source/163064.user.js)" near the middle of the page:
+To install the Predator Alert Tool for OkCupid, go to [http://maybemaimed.com/playground/predator-alert-tool-for-okcupid/](http://maybemaimed.com/playground/predator-alert-tool-for-okcupid/) and click "[Download and install](https://github.com/meitar/pat-okcupid/raw/master/okcupid-predator-alert-tool.user.js)" near the middle of the page:
 
-> [Download and install Predator Alert Tool for OkCupid](https://userscripts.org/scripts/source/163064.user.js)
+> [Download and install Predator Alert Tool for OkCupid](https://github.com/meitar/pat-okcupid/raw/master/okcupid-predator-alert-tool.user.js)
 
 There's also a fantastic, thorough [installation walkthrough (with screenshots!) you can follow](https://unquietpirate.wordpress.com/2013/04/04/how-to-install-the-predator-alert-tool-for-okcupid/).
 
 If you enjoy this script, please consider tossing a few metaphorical coins in [my cyberbusking hat](http://maybemaimed.com/cyberbusking/). :) Your donations are sincerely appreciated! Can't afford to part with any coin? It's cool. [Tweet your appreciation, instead](https://twitter.com/intent/tweet?text=Early+warning+of+tornados%3F+Check.+Want+an+early+warning+system+for+%23rape+%23culture%3F+http%3A%2F%2Fmaybemaimed.com%2Fplayground%2Fpredator-alert-tool-for-okcupid%2F+Predator+Alert+%23Tool+for+%40OkCupid.).
 
-If [maybemaimed.com is censored](http://maybemaimed.com/where-im-censored/) where you are, you can alternatively go to [the Userscripts.org page for Predator Alert Tool for OkCupid](https://userscripts.org/scripts/show/163064) and click on "[Install](http://userscripts.org/scripts/source/163064.user.js)". If the tool is also unavailable there, you can alternatively [download PAT-OKC from GitHub.com](https://github.com/meitar/pat-okcupid/raw/master/okcupid-predator-alert-tool.user.js).
+If [maybemaimed.com is censored](http://maybemaimed.com/where-im-censored/) where you are, you can alternatively go to [the Userscripts.org page for Predator Alert Tool for OkCupid](https://web.archive.org/web/20140409081511/https://userscripts.org/scripts/show/163064) and click on "[Install](https://github.com/meitar/pat-okcupid/raw/master/okcupid-predator-alert-tool.user.js)". If the tool is also unavailable there, you can alternatively [download PAT-OKC from GitHub.com](https://github.com/meitar/pat-okcupid/raw/master/okcupid-predator-alert-tool.user.js).
 
 ## Using
 
