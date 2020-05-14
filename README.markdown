@@ -37,15 +37,15 @@ If you use the [Google Chrome](https://chrome.google.com/) web browser (version 
 
 ## Installing
 
-To install the Predator Alert Tool for OkCupid, go to [http://maybemaimed.com/playground/predator-alert-tool-for-okcupid/](http://maybemaimed.com/playground/predator-alert-tool-for-okcupid/) and click "[Download and install](https://github.com/meitar/pat-okcupid/raw/master/okcupid-predator-alert-tool.user.js)" near the middle of the page:
+To install the Predator Alert Tool for OkCupid, go to [http://maybemaimed.com/playground/predator-alert-tool-for-okcupid/](http://maybemaimed.com/playground/predator-alert-tool-for-okcupid/) and click "[Download and install](https://github.com/fabacab/pat-okcupid/raw/master/okcupid-predator-alert-tool.user.js)" near the middle of the page:
 
-> [Download and install Predator Alert Tool for OkCupid](https://github.com/meitar/pat-okcupid/raw/master/okcupid-predator-alert-tool.user.js)
+> [Download and install Predator Alert Tool for OkCupid](https://github.com/fabacab/pat-okcupid/raw/master/okcupid-predator-alert-tool.user.js)
 
 There's also a fantastic, thorough [installation walkthrough (with screenshots!) you can follow](https://unquietpirate.wordpress.com/2013/04/04/how-to-install-the-predator-alert-tool-for-okcupid/).
 
 If you enjoy this script, please consider tossing a few metaphorical coins in [my cyberbusking hat](http://maybemaimed.com/cyberbusking/). :) Your donations are sincerely appreciated! Can't afford to part with any coin? It's cool. [Tweet your appreciation, instead](https://twitter.com/intent/tweet?text=Early+warning+of+tornados%3F+Check.+Want+an+early+warning+system+for+%23rape+%23culture%3F+http%3A%2F%2Fmaybemaimed.com%2Fplayground%2Fpredator-alert-tool-for-okcupid%2F+Predator+Alert+%23Tool+for+%40OkCupid.).
 
-If [maybemaimed.com is censored](http://maybemaimed.com/where-im-censored/) where you are, you can alternatively go to [the Userscripts.org page for Predator Alert Tool for OkCupid](https://web.archive.org/web/20140409081511/https://userscripts.org/scripts/show/163064) and click on "[Install](https://github.com/meitar/pat-okcupid/raw/master/okcupid-predator-alert-tool.user.js)". If the tool is also unavailable there, you can alternatively [download PAT-OKC from GitHub.com](https://github.com/meitar/pat-okcupid/raw/master/okcupid-predator-alert-tool.user.js).
+If [maybemaimed.com is censored](http://maybemaimed.com/where-im-censored/) where you are, you can alternatively go to [the Userscripts.org page for Predator Alert Tool for OkCupid](https://web.archive.org/web/20140409081511/https://userscripts.org/scripts/show/163064) and click on "[Install](https://github.com/fabacab/pat-okcupid/raw/master/okcupid-predator-alert-tool.user.js)". If the tool is also unavailable there, you can alternatively [download PAT-OKC from GitHub.com](https://github.com/fabacab/pat-okcupid/raw/master/okcupid-predator-alert-tool.user.js).
 
 ## Using
 
@@ -117,23 +117,23 @@ Each of the pages listed above also contain numerous additional links. I'd recom
 * Version 0.5:
     * Integration with CreepShield.com now offers automatic facial recognition scans of OkCupid user profile pictures against the United States national Sex Offender Registry.
 * Version 0.4.3:
-    * Update for OkCupid's new internal JavaScript, fixes [bug causing failure to display "OkCupid Predator Alert Warning" profile section](https://github.com/meitar/pat-okcupid/issues/17).
+    * Update for OkCupid's new internal JavaScript, fixes [bug causing failure to display "OkCupid Predator Alert Warning" profile section](https://github.com/fabacab/pat-okcupid/issues/17).
 * Version 0.4.2:
     * Update for OkCupid's new interface includes:
-        * Fixes for [visual interlacing](https://github.com/meitar/pat-okcupid/issues/16), incorrect questionnaire sequence, more.
+        * Fixes for [visual interlacing](https://github.com/fabacab/pat-okcupid/issues/16), incorrect questionnaire sequence, more.
         * Notify users of [Predator Alert Tool for Facebook](https://apps.facebook.com/predator-alert-tool/) availability.
 * Version 0.4.1:
     * Fix bug where custom flag popup was sometimes visually obscured.
 * Version 0.4:
-    * [New feature: custom flag set](https://github.com/meitar/pat-okcupid/issues/9). You can now define your own set of warning questions and red-flagged answers.
+    * [New feature: custom flag set](https://github.com/fabacab/pat-okcupid/issues/9). You can now define your own set of warning questions and red-flagged answers.
     * Fixed bug where some possible answers to Match Questions were not being suggested in the PAT-OKC suggestion form.
 * Version 0.3:
     * Add survey questions from [McWhorter's 2009 study](http://ncherm.org/documents/McWhorterVV2009.pdf) to flag questions set.
     * Fix bug where pausing the questionnaire before answering the first question resulted in unpredictable behavior.
     * Add simple version check mechanism.
 * Version 0.2.4:
-    * [Issue #3](https://github.com/meitar/pat-okcupid/issues/3#issuecomment-17585020): Improve performance. This may resolve some reported crashes, particulary on Firefox, too. (Thanks, [focalintent](https://twitter.com/focalintent)!)
-    * [Fixed bug #1](https://github.com/meitar/pat-okcupid/issues/1): PAT-OKC now remembers your place in the questionnaire, even if you forget to "pause."
+    * [Issue #3](https://github.com/fabacab/pat-okcupid/issues/3#issuecomment-17585020): Improve performance. This may resolve some reported crashes, particulary on Firefox, too. (Thanks, [focalintent](https://twitter.com/focalintent)!)
+    * [Fixed bug #1](https://github.com/fabacab/pat-okcupid/issues/1): PAT-OKC now remembers your place in the questionnaire, even if you forget to "pause."
     * Fixed broken links in some pop-up messages.
 * Version 0.2.3:
     * Fixed typo in user interface. :) What? I'm human, too.

@@ -17,7 +17,7 @@
 // @name           Predator Alert Tool for OkCupid
 // @version        0.5.3
 // @namespace      com.maybemaimed.pat.okcupid
-// @updateURL      https://github.com/meitar/pat-okcupid/raw/master/okcupid-predator-alert-tool.user.js
+// @updateURL      https://github.com/fabacab/pat-okcupid/raw/master/okcupid-predator-alert-tool.user.js
 // @description    Alerts you of potential sexual predators on OkCupid based on their own answers to Match Questions patterned after Lisak and Miller's groundbreaking academic work on identifying "undetected rapists."
 // @include        https://www.okcupid.com/*
 // @grant          GM_log
@@ -418,7 +418,7 @@ OKCPAT.scrapeMatchQuestionsPage = function (screenname, page_num) {
                     var answers_to_add = [];
 
                     // Change the "ldata" data structure so it's indexed by QID!
-                    // see https://github.com/meitar/pat-okcupid/issues/3#issuecomment-17585020
+                    // see https://github.com/fabacab/pat-okcupid/issues/3#issuecomment-17585020
                     var local_answers = {};
                     for (var i = 0; i < ldata.answers.length; i++) {
                         local_answers[ldata.answers[i].qid] = {
@@ -1033,8 +1033,8 @@ OKCPAT.injectResumeFirstRunLink = function () {
 };
 
 OKCPAT.getUpdatedVersionHtml = function () {
-    var html = '<h1>The <a href="https://github.com/meitar/pat-okcupid/#readme">Predator Alert Tool for OkCupid</a> has been updated.</h1>';
-    html += '<p>The running version is ' + OKCPAT.CONFIG.version + '. (<a href="https://github.com/meitar/pat-okcupid/#change-log" title="Read about what\'s new in this version.">Release notes</a>.)</p>';
+    var html = '<h1>The <a href="https://github.com/fabacab/pat-okcupid/#readme">Predator Alert Tool for OkCupid</a> has been updated.</h1>';
+    html += '<p>The running version is ' + OKCPAT.CONFIG.version + '. (<a href="https://github.com/fabacab/pat-okcupid/#change-log" title="Read about what\'s new in this version.">Release notes</a>.)</p>';
     html += '<p><strong>Did you know?</strong></p>';
     html += '<ul><li>Predator Alert Tool for OkCupid is one in <strong>a larger <a href="http://maybemaimed.com/2013/10/09/no-good-excuse-for-not-building-sexual-violence-prevention-tools-into-every-social-network-on-the-internet/">suite of Predator Alert Tools</a> available for other sites</strong>, including <a href="https://apps.facebook.com/predator-alert-tool/" title="Log in to Facebook to start using Predator Alert Tool for Facebook.">for Facebook</a>.</li></ul>';
     return html;
@@ -1204,8 +1204,8 @@ OKCPAT.injectPopUp = function (html, attrs) {
 
 OKCPAT.startFirstRun = function () {
     // Prepare pop-up HTML.
-    var html = '<h1>Thank you for installing the <a href="https://github.com/meitar/pat-okcupid/#readme">Predator Alert Tool for OkCupid</a>!</h1>';
-    html += '<p>The Predator Alert Tool for OkCupid (PAT-OKC) is <strong>an early warning system</strong> that highlights red flags which may be an indicator of predatory or abusive behavior on OkCupid. It is part of the larger <a href="https://github.com/meitar/pat-facebook/wiki/Frequently-Asked-Questions">Predator Alert Tool suite</a>, so if you use Facebook, consider using the <a href="https://apps.facebook.com/predator-alert-tool/">Predator Alert Tool for Facebook</a>, too.</p>';
+    var html = '<h1>Thank you for installing the <a href="https://github.com/fabacab/pat-okcupid/#readme">Predator Alert Tool for OkCupid</a>!</h1>';
+    html += '<p>The Predator Alert Tool for OkCupid (PAT-OKC) is <strong>an early warning system</strong> that highlights red flags which may be an indicator of predatory or abusive behavior on OkCupid. It is part of the larger <a href="https://github.com/fabacab/pat-facebook/wiki/Frequently-Asked-Questions">Predator Alert Tool suite</a>, so if you use Facebook, consider using the <a href="https://apps.facebook.com/predator-alert-tool/">Predator Alert Tool for Facebook</a>, too.</p>';
     html += '<p><strong>No software is a substitute for basic <a href="http://maymay.net/blog/2013/02/20/howto-use-tor-for-all-network-traffic-by-default-on-mac-os-x/#step-6">Internet self-defense</a>.</strong> Predator Alert Tools can only give you information to help you make better decisions; the decisions you make are still up to you. Always meet people you don\'t know from OkCupid in a public place, and consider <a href="https://yesmeansyesblog.wordpress.com/2010/04/26/what-is-a-safecall/">setting up a safe call</a> with one of your friends.</p>';
     html += "<p>As this is the first time you've installed the Predator Alert Tool for OkCupid (PAT-OKC), <strong>you'll be asked to answer a few OkCupid Match Questions</strong> that will help ensure your Web browser has the information it needs to alert you of a potentially dangerous profile. Ready? Set?</p>";
     var next_qid = OKCPAT.getQuestionIdOfFirstRunStep(0); // This is always the first step.
@@ -1216,7 +1216,7 @@ OKCPAT.finishFirstRun = function () {
     // Record that we've completed the first run sequence.
     OKCPAT.setValue('completed_first_run_questionnaire', true);
     // Prepare pop-up HTML.
-    var html = '<h1>You finished the <a href="https://github.com/meitar/pat-okcupid/#readme">Predator Alert Tool for OkCupid</a> questionnaire!</h1>';
+    var html = '<h1>You finished the <a href="https://github.com/fabacab/pat-okcupid/#readme">Predator Alert Tool for OkCupid</a> questionnaire!</h1>';
     html += '<p>You are now ready to begin using The Predator Alert Tool for OkCupid. :) Basically, that just means continuing to use OkCupid as you have been. However, there will be a few small changes:</p>';
     html += '<ul><li><img src="http://ak2.okccdn.com/php/load_okc_image.php/images/160x160/160x160/813x237/1500x924/2/7542193099865135582.jpeg" width="40" class="okcpat_red_flagged" style="float: right; margin: 0 0 1em 1em" />If you come across the OkCupid Profile of someone who PAT-OKC thinks might be dangerous, all of their pictures and links to their profile pages will be outlined in <strong>a blocky red square</strong>, as shown. If you see such a square, click in it for an explanation of why that profile was flagged.</li>';
     html += '<li>If you come across a Match Question that you think should be considered a "red flag", click the button to suggest it be added. The button looks like this: <p class="btn small" style="float: none; display: inline-block; margin: 0; width: auto;"><a href="#">Suggest as \'red flag\' to PAT-OKC</a></p></li></ul>';

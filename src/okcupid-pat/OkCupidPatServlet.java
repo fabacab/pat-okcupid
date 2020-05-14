@@ -1,7 +1,7 @@
 /**
  * Predator Alert Tool for OkCupid
  *
- * Written in 2013 by Meitar Moscovitz <meitar@maymay.net>
+ * Written in 2013.
  *
  * To the extent possible under law, the author(s) have dedicated all copyright
  * and related and neighboring rights to this software to the public domain
